@@ -29,11 +29,11 @@ test.describe('creating a Trip', () => {
       currency: 'USD',
     });
 
-    const row = page.getByRole('row', { name: new RegExp(tripName) });
-    await expect(row).toContainText(`${destination}, Japan`);
-    await expect(row).toContainText('4 travelers');
-    await expect(row).toContainText('5000 USD');
-    await expect(row).toContainText('Draft');
+    const card = page.getByRole('article', { name: tripName });
+    await expect(card).toContainText(`${destination}, Japan`);
+    await expect(card).toContainText('4 travelers');
+    await expect(card).toContainText('5000 USD');
+    await expect(card).toContainText('Draft');
   });
 
   // @covers REQ-TRV-011@v2
@@ -105,7 +105,9 @@ test.describe('creating a Trip', () => {
 
 test.describe('Trip dates', () => {
   // @covers REQ-TRV-012@v2
-  test('an end date before the start date is shown as an error on the end date', async ({ browser }) => {
+  test('an end date before the start date is shown as an error on the end date', async ({
+    browser,
+  }) => {
     const { name: destination } = await aDestinationAddedByAdministrator(browser, 'Tokyo');
     const page = await aConfirmedTravelerOnTrips(browser, 'end-before-start');
 
@@ -158,7 +160,9 @@ test.describe('managing saved Trips', () => {
   });
 
   // @covers REQ-TRV-015@v2
-  test('a Traveler deletes a Trip after confirming, and it leaves the list', async ({ browser }) => {
+  test('a Traveler deletes a Trip after confirming, and it leaves the list', async ({
+    browser,
+  }) => {
     const { name: destination } = await aDestinationAddedByAdministrator(browser, 'Tokyo');
     const page = await aConfirmedTravelerOnTrips(browser, 'delete');
     const tripName = uniqueName('Short break');
@@ -189,7 +193,9 @@ test.describe('managing saved Trips', () => {
   });
 
   // @covers REQ-TRV-007@v2
-  test('Traveler Y opening X Trip URL sees "Trip not found" and no Trip details', async ({ browser }) => {
+  test('Traveler Y opening X Trip URL sees "Trip not found" and no Trip details', async ({
+    browser,
+  }) => {
     const { name: destination } = await aDestinationAddedByAdministrator(browser, 'Tokyo');
     const x = await aConfirmedTravelerOnTrips(browser, 'owner-x');
     const tripName = uniqueName('Private trip');
@@ -232,7 +238,11 @@ test.describe('save messages', () => {
     // Storage cannot be broken under a running server, so the save is made to fail as storage would: a 500.
     await page.route('**/api/trips/*', async (route) =>
       route.request().method() === 'PATCH'
-        ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"code":"INTERNAL_ERROR"}' })
+        ? route.fulfill({
+            status: 500,
+            contentType: 'application/json',
+            body: '{"code":"INTERNAL_ERROR"}',
+          })
         : route.continue(),
     );
 
@@ -246,7 +256,9 @@ test.describe('save messages', () => {
 
 test.describe('Destinations on Trips', () => {
   // @covers REQ-TRV-093@v1
-  test('a Destination an Administrator just added is offered on the Trip form, shown with its country', async ({ browser }) => {
+  test('a Destination an Administrator just added is offered on the Trip form, shown with its country', async ({
+    browser,
+  }) => {
     const { name: destination } = await aDestinationAddedByAdministrator(browser, 'Kyoto');
     const page = await aConfirmedTravelerOnTrips(browser, 'offered');
     await page.goto('/trips/new');
@@ -262,12 +274,20 @@ test.describe('Destinations on Trips', () => {
   }) => {
     const { name: destination, admin } = await aDestinationAddedByAdministrator(browser, 'Kyoto');
     const page = await aConfirmedTravelerOnTrips(browser, 'in-use');
-    await createTripThroughUi(page, { name: uniqueName('Kyoto trip'), destinationName: destination });
+    await createTripThroughUi(page, {
+      name: uniqueName('Kyoto trip'),
+      destinationName: destination,
+    });
 
     await admin.goto('/admin/destinations');
-    await admin.getByRole('row', { name: new RegExp(destination) }).getByRole('button', { name: 'Remove' }).click();
+    await admin
+      .getByRole('row', { name: new RegExp(destination) })
+      .getByRole('button', { name: 'Remove' })
+      .click();
 
-    await expect(admin.getByRole('alert')).toHaveText('This Destination is used by a Trip and cannot be removed.');
+    await expect(admin.getByRole('alert')).toHaveText(
+      'This Destination is used by a Trip and cannot be removed.',
+    );
     await expect(admin.getByRole('row', { name: new RegExp(destination) })).toBeVisible();
   });
 });

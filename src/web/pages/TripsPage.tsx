@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DeletedTrips } from '../components/DeletedTrips';
+import { PageHeader } from '../components/PageHeader';
 import { TripFilters } from '../components/TripFilters';
 import { TripTable } from '../components/TripTable';
 import { apiPathFor, filterOptionsFrom, filterProblem, hasFilters, listMessage } from './trip-list-state';
@@ -13,7 +14,8 @@ const UNFILTERED = '/api/trips';
  * The Traveler's own saved Trips (REQ-TRV-016), which they can search and filter (REQ-TRV-076, REQ-TRV-077). The
  * search and the filters are in the address of the page, so a reload keeps them and Back returns to the list as
  * it was. What the page has to say (why the filters cannot be sent, or that nothing matches) is one polite
- * announcement, so a screen reader hears it.
+ * announcement, so a screen reader hears it. With no Trips at all, that announcement sits in a card with the one
+ * button that starts a Trip.
  */
 export function TripsPage() {
   const [reloads, setReloads] = useState(0);
@@ -29,13 +31,16 @@ export function TripsPage() {
     all.state === 'loaded' && shown.state === 'loaded' && isAnswerToNow
       ? listMessage({ total: all.trips.length, shown: shown.trips.length, hasFilters: hasFilters(form) })
       : null;
+  const hasNoTrips = all.state === 'loaded' && all.trips.length === 0;
+  const newTrip = (
+    <Link to="/trips/new" className="btn btn-primary">
+      New Trip
+    </Link>
+  );
 
   return (
     <>
-      <h1>Your Trips</h1>
-      <p>
-        <Link to="/trips/new">New Trip</Link>
-      </p>
+      <PageHeader title="Your Trips" lead="Every Trip you have saved, with its Plan." actions={hasNoTrips ? null : newTrip} />
       {all.state === 'loaded' && all.trips.length > 0 ? (
         <TripFilters
           form={form}
@@ -46,8 +51,16 @@ export function TripsPage() {
           onClear={clear}
         />
       ) : null}
-      <p role="status">{problem ?? message ?? ''}</p>
-      {shown.state === 'loading' ? <p>Loading…</p> : null}
+      <div className={hasNoTrips ? 'empty-state' : 'list-status'}>
+        <p role="status">{problem ?? message ?? ''}</p>
+        {hasNoTrips ? (
+          <>
+            <p className="muted">Create a Trip, then generate its Plan day by day.</p>
+            {newTrip}
+          </>
+        ) : null}
+      </div>
+      {shown.state === 'loading' ? <p className="loading">Loading…</p> : null}
       {shown.state === 'loaded' && shown.trips.length > 0 ? <TripTable trips={shown.trips} /> : null}
       {shown.state === 'failed' ? <p role="alert">{shown.message}</p> : null}
       <DeletedTrips onRestored={() => setReloads((count) => count + 1)} />

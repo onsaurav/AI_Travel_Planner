@@ -48,9 +48,9 @@ export function TripFilters({ form, searchText, options, onSearchText, onChange,
 }) {
   const set = (field: keyof FilterForm) => (value: string) => onChange(field, value);
   return (
-    <form role="search" aria-label="Search and filter Trips" onSubmit={(event) => event.preventDefault()} noValidate>
+    <form role="search" aria-label="Search and filter Trips" className="filter-bar" onSubmit={(event) => event.preventDefault()} noValidate>
       <FormField label="Search Trips" value={searchText} onChange={onSearchText} />
-      <fieldset className="choice-group">
+      <fieldset className="filter-grid">
         <legend>Filters</legend>
         <ChoiceField label="Country" choices={same(options.countries)} value={form.country} onChange={set('country')} />
         <ChoiceField

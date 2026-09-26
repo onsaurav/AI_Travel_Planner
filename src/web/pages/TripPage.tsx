@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { TripView } from '../../shared/trip-schemas';
 import { api } from '../api-client';
+import { PageHeader } from '../components/PageHeader';
+import { PageHeader } from '../components/PageHeader';
 import { PlanGenerator } from '../components/PlanGenerator';
 import { PreferenceSummary } from '../components/PreferenceSummary';
+import { StatusBadge } from '../components/StatusBadge';
+import { StatusBadge } from '../components/StatusBadge';
 import { travelersLabel } from './trip-labels';
 
 type TripState =
@@ -23,7 +27,8 @@ export function TripPage() {
   useEffect(() => {
     let isCurrent = true;
     void api<TripView>('GET', path).then((result) => {
-      if (isCurrent) setTrip(result.ok ? { state: 'loaded', trip: result.data } : { state: 'not-found' });
+      if (isCurrent)
+        setTrip(result.ok ? { state: 'loaded', trip: result.data } : { state: 'not-found' });
     });
     return () => {
       isCurrent = false;
@@ -43,43 +48,67 @@ export function TripPage() {
     else setDeleteFailure(result.error.message ?? 'The Trip could not be deleted. Try again.');
   };
 
-  if (trip.state === 'loading') return <p>Loading…</p>;
+  if (trip.state === 'loading') return <p className="loading">Loading…</p>;
   if (trip.state === 'not-found') return <h1>Trip not found</h1>;
   const { trip: shown } = trip;
   return (
     <>
-      <h1>{shown.name}</h1>
-      <dl>
-        <dt>Destination</dt>
-        <dd>{`${shown.destination.name}, ${shown.destination.country}`}</dd>
-        <dt>Dates</dt>
-        <dd>{`${shown.startDate} to ${shown.endDate}`}</dd>
-        <dt>Travelers</dt>
-        <dd>{travelersLabel(shown)}</dd>
-        <dt>Budget</dt>
-        <dd>{`${shown.budget} ${shown.currency}`}</dd>
-        <dt>Status</dt>
-        <dd>{shown.status}</dd>
-      </dl>
-      <PreferenceSummary trip={shown} />
-      <PlanGenerator key={shown.id} trip={shown} onPlanSaved={reloadTrip} />
-      <Link to={`/trips/${encodeURIComponent(shown.id)}/edit`}>Edit</Link>
+      <p className="back-link">
+        <Link to="/trips">Your Trips</Link>
+      </p>
+      <PageHeader
+        title={shown.name}
+        lead={`${shown.destination.name}, ${shown.destination.country}`}
+        badge={<StatusBadge label={shown.status} />}
+        actions={
+          <>
+            <Link to={`/trips/${encodeURIComponent(shown.id)}/edit`} className="btn">
+              Edit
+            </Link>
+            {isConfirmingDelete ? null : (
+              <button type="button" className="btn-danger-quiet" onClick={() => setIsConfirmingDelete(true)}>
+                Delete Trip
+              </button>
+            )}
+          </>
+        }
+      />
       {isConfirmingDelete ? (
-        <div role="group" aria-label="Confirm delete">
+        <div role="group" aria-label="Confirm delete" className="confirm-box danger">
           <p>Delete this Trip?</p>
-          <button type="button" onClick={() => void deleteTrip()}>
+          <button type="button" className="btn-danger" onClick={() => void deleteTrip()}>
             Yes, delete
           </button>
           <button type="button" onClick={() => setIsConfirmingDelete(false)}>
             Cancel
           </button>
         </div>
-      ) : (
-        <button type="button" onClick={() => setIsConfirmingDelete(true)}>
-          Delete Trip
-        </button>
-      )}
+      ) : null}
       {deleteFailure ? <p role="alert">{deleteFailure}</p> : null}
+      <dl className="fact-grid">
+        <div>
+          <dt>Destination</dt>
+          <dd>{`${shown.destination.name}, ${shown.destination.country}`}</dd>
+        </div>
+        <div>
+          <dt>Dates</dt>
+          <dd>{`${shown.startDate} to ${shown.endDate}`}</dd>
+        </div>
+        <div>
+          <dt>Travelers</dt>
+          <dd>{travelersLabel(shown)}</dd>
+        </div>
+        <div>
+          <dt>Budget</dt>
+          <dd>{`${shown.budget} ${shown.currency}`}</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd>{shown.status}</dd>
+        </div>
+      </dl>
+      <PreferenceSummary trip={shown} />
+      <PlanGenerator key={shown.id} trip={shown} onPlanSaved={reloadTrip} />
     </>
   );
 }

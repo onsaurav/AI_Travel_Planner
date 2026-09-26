@@ -3067,3 +3067,175 @@
         The request received by the test double does not contain traveler@example.com
   depends_on: [REQ-TRV-033, REQ-TRV-035]
   belts: [A]
+
+# ---------------------------------------------------------------------------
+# Business product — CHG-0004 (2026-09-26)
+# The functions exist. A travel business still cannot run on a homework UI.
+# Observable product quality. Not maps, weather, booking, or a Consultant role.
+# ---------------------------------------------------------------------------
+- id: REQ-TRV-106
+  title: A signed-in Traveler's home is a workspace for their Trips
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/business-product.spec.ts
+    - tests/unit/business-product.test.ts
+  version: 1
+  source: >-
+    BRD v1.0 §3 ("simple and engaging travel-planning experience");
+    developer instruction 2026-09-26 that the product must be usable to run
+    the travel-planning business, recorded as CHG-0004
+  rationale: >-
+    A list of links in a spreadsheet is not a workspace. Staff and Travelers
+    must see their Trips as work they can act on.
+  acceptance:
+    - given: A confirmed Traveler with at least one Trip
+      when: They open their Trips page
+      then: >-
+        The page heading is Your Trips, and a control named New Trip is
+        visible without scrolling the Trip list
+    - given: A confirmed Traveler with a Trip named Tokyo Family Holiday
+      when: They open their Trips page
+      then: >-
+        That Trip is shown as its own block that names the Trip, the
+        Destination, the start and end dates, and the status, each readable
+        without opening the Trip
+    - given: A confirmed Traveler with no Trips
+      when: They open their Trips page
+      then: >-
+        The page says they have no Trips yet and offers New Trip as the
+        action to take
+  depends_on: [REQ-TRV-016]
+  ambiguities: []
+  belts: [A, B]
+
+- id: REQ-TRV-107
+  title: A saved Plan is shown as a day-by-day itinerary
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/business-product.spec.ts
+    - tests/unit/business-product.test.ts
+  version: 1
+  source: >-
+    BRD v1.0 §8 (day-by-day itinerary); CHG-0004
+  rationale: >-
+    A Plan is what the business hands a Traveler. Stacked headings and a
+    raw list are not an itinerary they can brief a customer from.
+  acceptance:
+    - given: A Traveler viewing a Trip that has a saved Plan of more than one Day
+      when: The Plan is shown
+      then: >-
+        Each Day is in its own region labelled with that Day's heading, and
+        every Activity of that Day is listed inside that region
+    - given: A Traveler viewing a Trip that has a saved Plan
+      when: The Plan is shown
+      then: The recommendation notice is visible above the Days
+  depends_on: [REQ-TRV-017, REQ-TRV-031]
+  ambiguities: []
+  belts: [A, B]
+
+- id: REQ-TRV-108
+  title: The Administrator home is an operations console
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/business-product.spec.ts
+    - tests/unit/business-product.test.ts
+  version: 1
+  source: >-
+    BRD v1.0 §3 (administrator view for users, destinations, feedback and
+    metrics); CHG-0004
+  rationale: >-
+    The business runs from this screen. A bullet list of links is not an
+    operations console.
+  acceptance:
+    - given: A signed-in Administrator
+      when: They open the Admin dashboard
+      then: >-
+        Each admin function is a named control that takes them to that
+        function's screen
+    - given: A signed-in Administrator and at least one captured metric
+      when: They open the Admin dashboard
+      then: Those metrics are visible on that same page
+  depends_on: [REQ-TRV-068]
+  ambiguities: []
+  belts: [A, B]
+
+- id: REQ-TRV-109
+  title: Sign-in screens identify the product
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/business-product.spec.ts
+    - tests/unit/business-product.test.ts
+  version: 1
+  source: BRD v1.0 §3; CHG-0004
+  rationale: >-
+    A staff member or Traveler who bookmarks Log in must see they are in
+    AI Travel Planner, not an unnamed form.
+  acceptance:
+    - given: A visitor on the log-in page
+      when: The page is shown
+      then: The words AI Travel Planner are visible
+    - given: A visitor on the registration page
+      when: The page is shown
+      then: The words AI Travel Planner are visible
+  depends_on: [REQ-TRV-001, REQ-TRV-005]
+  ambiguities: []
+  belts: [A, B]
+
+- id: REQ-TRV-110
+  title: A Traveler can print a Plan as an itinerary
+  module: TRV
+  priority: should
+  status: verified
+  verified_by:
+    - e2e/business-product.spec.ts
+    - tests/unit/business-product.test.ts
+  version: 1
+  source: >-
+    BRD v1.0 §3 (save, edit, share plans); CHG-0004. Not calendar
+    integration (REQ-TRV-085) and not a booking (REQ-TRV-090)
+  rationale: >-
+    A travel desk must hand a Traveler a page they can print. That is
+    operations, not a map or a booking provider.
+  acceptance:
+    - given: A Traveler viewing a Trip that has a saved Plan
+      when: The Trip page is shown
+      then: A control named Print itinerary is visible
+    - given: A Traveler viewing a Trip that has a saved Plan of two Days
+      when: They choose Print itinerary
+      then: >-
+        The print view includes both Day headings and every Activity title,
+        and does not show a map
+  depends_on: [REQ-TRV-017]
+  ambiguities: []
+  belts: [A, B]
+
+- id: REQ-TRV-111
+  title: The Administrator dashboard shows how many Trips are Draft and Planned
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/business-product.spec.ts
+    - tests/api/admin-metrics.http.spec.ts
+    - tests/unit/admin-metrics.test.ts
+  version: 1
+  source: BRD v1.0 §3 (system-level reporting); CHG-0004
+  rationale: >-
+    Running the business means knowing the pipeline. A dashboard that only
+    links to lists does not say how the work stands today.
+  acceptance:
+    - given: >-
+        An Administrator, one Trip in Draft and one Trip in Planned
+      when: They open the Admin dashboard
+      then: The page shows the number 1 for Draft Trips and the number 1 for Planned Trips
+  depends_on: [REQ-TRV-016, REQ-TRV-068]
+  ambiguities: []
+  belts: [A, B, C]

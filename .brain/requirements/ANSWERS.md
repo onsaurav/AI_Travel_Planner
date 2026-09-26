@@ -357,3 +357,9 @@ _The client's privacy answer (Australian Privacy Act, account deletion, data exp
 _CHG-0003 moved 4 acceptance criteria, word for word, out of REQ-TRV-029, 030 and 033 into new requirements REQ-TRV-102 to 105, so that each requirement can be tested in the slice that builds it (slices 7 and 8). Are the regrouped requirements agreed, and is the change absorbed, varied, deferred or declined?_
 
 **From the developer** (Kartik Chandra Biswas), session 2026-09-25: agreed as absorbed. No criterion's wording changed and no scope was added or removed; the client confirmed every moved criterion on 2026-09-23 as part of the v1 text. The client is to be informed of the regrouping in the next report, not asked first.
+
+## CHG-0004: is a business-grade workspace in scope?
+
+_The delivered screens are not a product a travel business can run. Must that be agreed, sliced and built, and does it include maps, booking or a Travel Consultant?_
+
+**From the developer** (Kartik Chandra Biswas), session 2026-09-26: yes — workspace quality is in scope as REQ-TRV-106 to 111, slice 17, absorbed for the demo. Maps, weather, flights, hotels, booking and Travel Consultant stay out (REQ-TRV-079, 082–090).

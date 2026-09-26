@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import type { AdminMetrics } from '../../../shared/admin-metrics';
 import { api } from '../../api-client';
 import { FormField } from '../../components/FormField';
-import { averageRatingLabel, budgetLabel, tripsSplitLabel, usageCostLabel } from './admin-view-state';
+import {
+  averageRatingLabel,
+  budgetLabel,
+  tripsSplitLabel,
+  usageCostLabel,
+} from './admin-view-state';
 
 type State =
   | { readonly state: 'loading' }
@@ -38,7 +43,14 @@ export function MetricsPanel() {
     void api<AdminMetrics>('GET', `/api/admin/metrics${queryFor(from, to)}`).then((result) => {
       if (!isCurrent) return;
       setIsReading(false);
-      setShown(result.ok ? { state: 'loaded', metrics: result.data } : { state: 'failed', message: result.error.message ?? 'The figures could not be loaded.' });
+      setShown(
+        result.ok
+          ? { state: 'loaded', metrics: result.data }
+          : {
+              state: 'failed',
+              message: result.error.message ?? 'The figures could not be loaded.',
+            },
+      );
     });
     return () => {
       isCurrent = false;
@@ -55,7 +67,13 @@ export function MetricsPanel() {
       <fieldset>
         <legend>AI usage dates</legend>
         <FormField label="From" type="date" value={from} onChange={setFrom} />
-        <FormField label="To" type="date" value={to} onChange={setTo} error={isBackwards ? RANGE_BACKWARDS : undefined} />
+        <FormField
+          label="To"
+          type="date"
+          value={to}
+          onChange={setTo}
+          error={isBackwards ? RANGE_BACKWARDS : undefined}
+        />
       </fieldset>
       {metrics ? (
         <dl aria-busy={isReading}>
@@ -77,6 +95,10 @@ function Figures({ metrics }: { readonly metrics: AdminMetrics }) {
         <dd>{metrics.users}</dd>
         <dt>Total trips</dt>
         <dd>{tripsSplitLabel(metrics.trips)}</dd>
+        <dt>Draft Trips</dt>
+        <dd>{metrics.trips.draft}</dd>
+        <dt>Planned Trips</dt>
+        <dd>{metrics.trips.planned}</dd>
         <dt>Generated itineraries</dt>
         <dd>{metrics.generatedItineraries}</dd>
         <dt>Feedback volume</dt>
@@ -90,7 +112,9 @@ function Figures({ metrics }: { readonly metrics: AdminMetrics }) {
       ) : (
         <ol aria-label="Ranked by number of Trips">
           {metrics.popularDestinations.map((destination) => (
-            <li key={`${destination.name}-${destination.country}`}>{`${destination.name}, ${destination.country}: ${destination.trips} ${destination.trips === 1 ? 'Trip' : 'Trips'}`}</li>
+            <li
+              key={`${destination.name}-${destination.country}`}
+            >{`${destination.name}, ${destination.country}: ${destination.trips} ${destination.trips === 1 ? 'Trip' : 'Trips'}`}</li>
           ))}
         </ol>
       )}

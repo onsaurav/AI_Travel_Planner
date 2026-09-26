@@ -1,12 +1,19 @@
 import { expect, test, type Page } from '@playwright/test';
 import { logInThroughUi } from './support/journeys';
-import { aTripReadyToPlan, expectDaysShown, generatePlan, setAiScript, TRIP_DAY_COUNT } from './support/plan-journeys';
+import {
+  aTripReadyToPlan,
+  expectDaysShown,
+  generatePlan,
+  setAiScript,
+  TRIP_DAY_COUNT,
+} from './support/plan-journeys';
 import { seedPastTripWithPlan } from './support/seed-past-trip';
 import { daysFromToday, openTrip } from './support/trip-journeys';
 import { uniqueName } from './support/admin-journeys';
 
 const versionList = (page: Page) => page.getByRole('list', { name: 'Plan versions' });
-const activityButtons = (page: Page) => page.getByRole('region', { name: /^Day \d/ }).getByRole('button');
+const activityButtons = (page: Page) =>
+  page.getByRole('region', { name: /^Day \d/ }).getByRole('button');
 
 async function generateAndWaitForVersion(page: Page, version: number): Promise<void> {
   await generatePlan(page);
@@ -19,10 +26,12 @@ test.afterEach(async () => {
 
 test.describe('saving a generated Plan', () => {
   // @covers REQ-TRV-017@v1
-  test('a Traveler generates a Plan, reloads the page and still sees it, and the Trip is listed as Planned', async ({ browser }) => {
+  test('a Traveler generates a Plan, reloads the page and still sees it, and the Trip is listed as Planned', async ({
+    browser,
+  }) => {
     const { page, tripName } = await aTripReadyToPlan(browser, 'save-plan');
     await page.goto('/trips');
-    await expect(page.getByRole('row', { name: new RegExp(tripName) })).toContainText('Draft');
+    await expect(page.getByRole('article', { name: tripName })).toContainText('Draft');
     await openTrip(page, tripName);
 
     await expect(page.getByText('Draft', { exact: true })).toBeVisible();
@@ -35,11 +44,13 @@ test.describe('saving a generated Plan', () => {
 
     await expectDaysShown(page);
     await page.goto('/trips');
-    await expect(page.getByRole('row', { name: new RegExp(tripName) })).toContainText('Planned');
+    await expect(page.getByRole('article', { name: tripName })).toContainText('Planned');
   });
 
   // @covers REQ-TRV-017@v1
-  test('the version list holds exactly one version after the first Plan is generated', async ({ browser }) => {
+  test('the version list holds exactly one version after the first Plan is generated', async ({
+    browser,
+  }) => {
     const { page } = await aTripReadyToPlan(browser, 'one-version');
     await expect(versionList(page)).toHaveCount(0);
 
@@ -52,7 +63,9 @@ test.describe('saving a generated Plan', () => {
 
 test.describe('reopening a saved Trip', () => {
   // @covers REQ-TRV-018@v1
-  test('shows the same 8 Days and Activities after the Traveler logs out, logs in and opens the Trip', async ({ browser }) => {
+  test('shows the same 8 Days and Activities after the Traveler logs out, logs in and opens the Trip', async ({
+    browser,
+  }) => {
     const { page, email, tripName } = await aTripReadyToPlan(browser, 'reopen', 8);
     await generatePlan(page);
     await expectDaysShown(page, 8);
@@ -69,7 +82,9 @@ test.describe('reopening a saved Trip', () => {
   });
 
   // @covers REQ-TRV-018@v1
-  test('restores the first of two versions, shows its Plan, and lists three versions with none removed', async ({ browser }) => {
+  test('restores the first of two versions, shows its Plan, and lists three versions with none removed', async ({
+    browser,
+  }) => {
     const { page } = await aTripReadyToPlan(browser, 'restore');
     await setAiScript({ mode: 'ok', dayCount: TRIP_DAY_COUNT, label: 'First idea' });
     await generateAndWaitForVersion(page, 1);
@@ -107,7 +122,11 @@ test.describe('a Trip whose dates have passed', () => {
   test('opens showing the Trip and its Plan', async ({ browser }) => {
     const { page, email, destinationName } = await aTripReadyToPlan(browser, 'past');
     const tripName = uniqueName('Past Trip');
-    const { startDate, endDate } = seedPastTripWithPlan({ ownerEmail: email, destinationName, tripName });
+    const { startDate, endDate } = seedPastTripWithPlan({
+      ownerEmail: email,
+      destinationName,
+      tripName,
+    });
     expect(startDate < daysFromToday(0)).toBe(true);
 
     await openTrip(page, tripName);

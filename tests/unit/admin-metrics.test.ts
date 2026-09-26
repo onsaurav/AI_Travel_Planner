@@ -19,7 +19,16 @@ describe('the usage metrics on the admin dashboard', () => {
     aTraveler();
     aTraveler();
     aTraveler();
-    db.insert(accounts).values({ id: 'admin-1', email: 'admin@example.com', passwordHash: 'x', role: 'administrator', emailConfirmedAt: TODAY, createdAt: TODAY }).run();
+    db.insert(accounts)
+      .values({
+        id: 'admin-1',
+        email: 'admin@example.com',
+        passwordHash: 'x',
+        role: 'administrator',
+        emailConfirmedAt: TODAY,
+        createdAt: TODAY,
+      })
+      .run();
 
     expect(metrics.read({}).users).toBe(3);
   });
@@ -27,13 +36,32 @@ describe('the usage metrics on the admin dashboard', () => {
   // @covers REQ-TRV-069@v1
   test('count a Traveler whose email is not confirmed or who is disabled as a user', () => {
     const { metrics, db } = aMetricsSetup();
-    db.insert(accounts).values({ id: 't-1', email: 'unconfirmed@example.com', passwordHash: 'x', role: 'traveler', createdAt: TODAY }).run();
-    db.insert(accounts).values({ id: 't-2', email: 'disabled@example.com', passwordHash: 'x', role: 'traveler', emailConfirmedAt: TODAY, disabledAt: TODAY, createdAt: TODAY }).run();
+    db.insert(accounts)
+      .values({
+        id: 't-1',
+        email: 'unconfirmed@example.com',
+        passwordHash: 'x',
+        role: 'traveler',
+        createdAt: TODAY,
+      })
+      .run();
+    db.insert(accounts)
+      .values({
+        id: 't-2',
+        email: 'disabled@example.com',
+        passwordHash: 'x',
+        role: 'traveler',
+        emailConfirmedAt: TODAY,
+        disabledAt: TODAY,
+        createdAt: TODAY,
+      })
+      .run();
 
     expect(metrics.read({}).users).toBe(2);
   });
 
   // @covers REQ-TRV-069@v1
+  // @covers REQ-TRV-111@v1
   test('show total trips 5, split as 2 Draft and 3 Planned', () => {
     const { metrics, aTripWithAPlan, aDraftTrip } = aMetricsSetup();
     for (let planned = 0; planned < 3; planned += 1) aTripWithAPlan();
@@ -41,6 +69,15 @@ describe('the usage metrics on the admin dashboard', () => {
     aDraftTrip();
 
     expect(metrics.read({}).trips).toEqual({ total: 5, draft: 2, planned: 3 });
+  });
+
+  // @covers REQ-TRV-111@v1
+  test('show 1 Draft Trip and 1 Planned Trip when there is one of each', () => {
+    const { metrics, aTripWithAPlan, aDraftTrip } = aMetricsSetup();
+    aTripWithAPlan();
+    aDraftTrip();
+
+    expect(metrics.read({}).trips).toEqual({ total: 2, draft: 1, planned: 1 });
   });
 
   // @covers REQ-TRV-069@v1
@@ -73,7 +110,8 @@ describe('the usage metrics on the admin dashboard', () => {
   test('show generated itineraries 3 for a Plan generated once and regenerated twice, then changed by a chat change and a restore', () => {
     const { metrics, db } = aMetricsSetup();
     const when = TODAY;
-    for (let made = 0; made < 3; made += 1) anAiRequestRecord(db, { kind: 'plan-generation', createdAt: when });
+    for (let made = 0; made < 3; made += 1)
+      anAiRequestRecord(db, { kind: 'plan-generation', createdAt: when });
     anAiRequestRecord(db, { kind: 'chat', createdAt: when });
 
     expect(metrics.read({}).generatedItineraries).toBe(3);
@@ -94,13 +132,16 @@ describe('the usage metrics on the admin dashboard', () => {
   test('list 10 Destinations, ordered by number of Trips, for Trips to 12 different Destinations', () => {
     const { metrics, aTripWithAPlan } = aMetricsSetup();
     for (let n = 1; n <= 12; n += 1) {
-      for (let trips = 0; trips < n; trips += 1) aTripWithAPlan({ destination: `Place ${String(n).padStart(2, '0')}` });
+      for (let trips = 0; trips < n; trips += 1)
+        aTripWithAPlan({ destination: `Place ${String(n).padStart(2, '0')}` });
     }
 
     const { popularDestinations } = metrics.read({});
 
     expect(popularDestinations).toHaveLength(10);
-    expect(popularDestinations.map((destination) => destination.trips)).toEqual([12, 11, 10, 9, 8, 7, 6, 5, 4, 3]);
+    expect(popularDestinations.map((destination) => destination.trips)).toEqual([
+      12, 11, 10, 9, 8, 7, 6, 5, 4, 3,
+    ]);
     expect(popularDestinations[0]).toMatchObject({ name: 'Place 12', country: 'Japan', trips: 12 });
   });
 
@@ -111,7 +152,11 @@ describe('the usage metrics on the admin dashboard', () => {
     aTripWithAPlan({ destination: 'Kyoto' });
     aTripWithAPlan({ destination: 'Nara' });
 
-    expect(metrics.read({}).popularDestinations.map((destination) => destination.name)).toEqual(['Kyoto', 'Nara', 'Osaka']);
+    expect(metrics.read({}).popularDestinations.map((destination) => destination.name)).toEqual([
+      'Kyoto',
+      'Nara',
+      'Osaka',
+    ]);
   });
 
   // @covers REQ-TRV-069@v1
@@ -139,10 +184,17 @@ describe('the usage metrics on the admin dashboard', () => {
   // @covers REQ-TRV-069@v1
   test('show AI usage of 10 requests and an estimated cost of 1.50 for the date range that holds 10 requests costing 1.50, and not the 5 outside it', () => {
     const { metrics, db } = aMetricsSetup();
-    for (let made = 0; made < 10; made += 1) anAiRequestRecord(db, { createdAt: at('2026-10-05'), costMicroUsd: 150_000 });
-    for (let made = 0; made < 5; made += 1) anAiRequestRecord(db, { createdAt: at('2026-11-20'), costMicroUsd: 999_000 });
+    for (let made = 0; made < 10; made += 1)
+      anAiRequestRecord(db, { createdAt: at('2026-10-05'), costMicroUsd: 150_000 });
+    for (let made = 0; made < 5; made += 1)
+      anAiRequestRecord(db, { createdAt: at('2026-11-20'), costMicroUsd: 999_000 });
 
-    expect(metrics.read({ from: '2026-10-01', to: '2026-10-31' }).aiUsage).toEqual({ requests: 10, estimatedCost: 1.5, from: '2026-10-01', to: '2026-10-31' });
+    expect(metrics.read({ from: '2026-10-01', to: '2026-10-31' }).aiUsage).toEqual({
+      requests: 10,
+      estimatedCost: 1.5,
+      from: '2026-10-01',
+      to: '2026-10-31',
+    });
   });
 
   // @covers REQ-TRV-069@v1
@@ -159,7 +211,10 @@ describe('the usage metrics on the admin dashboard', () => {
   // @covers REQ-TRV-069@v1
   test('count every AI request, whatever its outcome or kind, when no range is chosen', () => {
     const { metrics, db } = aMetricsSetup();
-    anAiRequestRecord(db, { kind: 'plan-generation', createdAt: new Date(TODAY.getTime() - 400 * DAY) });
+    anAiRequestRecord(db, {
+      kind: 'plan-generation',
+      createdAt: new Date(TODAY.getTime() - 400 * DAY),
+    });
     anAiRequestRecord(db, { kind: 'chat', status: 'failed', createdAt: TODAY });
 
     expect(metrics.read({}).aiUsage).toMatchObject({ requests: 2, from: null, to: null });
@@ -201,17 +256,21 @@ describe('the rounding of the usage figures', () => {
     [1_004_999, 1],
     [149_999, 0.15],
     [4_000, 0],
-  ])('rounds an estimated cost of %i micro-dollars to %f dollars, half a cent upwards', (micro, dollars) => {
-    const { metrics, db } = aMetricsSetup();
-    anAiRequestRecord(db, { createdAt: TODAY, costMicroUsd: micro });
+  ])(
+    'rounds an estimated cost of %i micro-dollars to %f dollars, half a cent upwards',
+    (micro, dollars) => {
+      const { metrics, db } = aMetricsSetup();
+      anAiRequestRecord(db, { createdAt: TODAY, costMicroUsd: micro });
 
-    expect(metrics.read({}).aiUsage.estimatedCost).toBe(dollars);
-  });
+      expect(metrics.read({}).aiUsage.estimatedCost).toBe(dollars);
+    },
+  );
 
   // @covers REQ-TRV-069@v1
   test('rounds an average budget of 1000.4 down and of 1000.5 up', () => {
     const { metrics, aTripWithAPlan } = aMetricsSetup();
-    for (const budget of [1000, 1000, 1001, 1001, 1000]) aTripWithAPlan({ trip: { budget, currency: 'GBP' } });
+    for (const budget of [1000, 1000, 1001, 1001, 1000])
+      aTripWithAPlan({ trip: { budget, currency: 'GBP' } });
     aTripWithAPlan({ trip: { budget: 1000, currency: 'JPY' } });
     aTripWithAPlan({ trip: { budget: 1001, currency: 'JPY' } });
 

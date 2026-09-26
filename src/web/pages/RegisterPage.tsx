@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../api-client';
 import { FormField } from '../components/FormField';
 import { PrivacyNotice } from '../components/PrivacyNotice';
+import { AuthShell } from '../components/AuthShell';
 
 interface FieldErrors {
   readonly email?: string;
@@ -35,16 +36,18 @@ export function RegisterPage() {
 
   if (isRegistered) {
     return (
-      <main>
+      <AuthShell>
         <h1>Create your account</h1>
         <p role="status">Check your email to confirm your address.</p>
-        <Link to="/login">Log in</Link>
-      </main>
+        <Link to="/login" className="btn btn-primary">
+          Log in
+        </Link>
+      </AuthShell>
     );
   }
 
   return (
-    <main>
+    <AuthShell>
       <h1>Create your account</h1>
       <PrivacyNotice />
       <form onSubmit={(event) => void submit(event)} noValidate>
@@ -64,6 +67,6 @@ export function RegisterPage() {
       <p>
         Already have an account? <Link to="/login">Log in</Link>
       </p>
-    </main>
+    </AuthShell>
   );
 }

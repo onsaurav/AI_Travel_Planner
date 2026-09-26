@@ -123,3 +123,9 @@
   branch: feat/trv-profile-privacy
   why: "One Traveler asking for another Traveler's profile gets a 404 with none of that profile's fields"
   covers: [REQ-TRV-008]
+
+- id: 17
+  name: Business product
+  branch: feat/trv-business-product
+  why: "The application is a workspace a travel business can run — Traveler home, itinerary, print, admin console and pipeline counts — without maps, weather or booking"
+  covers: [REQ-TRV-106, REQ-TRV-107, REQ-TRV-108, REQ-TRV-109, REQ-TRV-110, REQ-TRV-111]

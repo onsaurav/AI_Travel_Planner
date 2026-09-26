@@ -2,6 +2,7 @@ import { useEffect, useReducer, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { TripView } from '../../shared/trip-schemas';
 import { api } from '../api-client';
+import { PageHeader } from '../components/PageHeader';
 import { TripForm } from '../components/TripForm';
 import {
   initialTripFormState,
@@ -64,9 +65,16 @@ export function TripFormPage() {
   if (loadFailure) {
     return <h1>{loadFailure}</h1>;
   }
+  const backTo = isEditing ? `/trips/${encodeURIComponent(id)}` : '/trips';
   return (
     <>
-      <h1>{isEditing ? 'Edit Trip' : 'New Trip'}</h1>
+      <p className="back-link">
+        <Link to={backTo}>Back</Link>
+      </p>
+      <PageHeader
+        title={isEditing ? 'Edit Trip' : 'New Trip'}
+        lead={isEditing ? 'Change the Trip. A change that affects the Plan asks first.' : 'Tell us where, when and how you like to travel.'}
+      />
       <TripForm
         state={state}
         dispatch={dispatch}
@@ -75,9 +83,6 @@ export function TripFormPage() {
         isSaving={isSaving}
         onConfirmPlanChange={() => void save(true)}
       />
-      <p>
-        <Link to={isEditing ? `/trips/${encodeURIComponent(id)}` : '/trips'}>Back</Link>
-      </p>
     </>
   );
 }

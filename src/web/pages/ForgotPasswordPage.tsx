@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api-client';
 import { FormField } from '../components/FormField';
+import { AuthShell } from '../components/AuthShell';
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -18,7 +19,7 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <main>
+    <AuthShell>
       <h1>Reset your password</h1>
       <form onSubmit={(event) => void submit(event)} noValidate>
         <FormField label="Email address" type="email" value={email} onChange={setEmail} autoComplete="email" />
@@ -28,6 +29,6 @@ export function ForgotPasswordPage() {
       <p>
         <Link to="/login">Back to log in</Link>
       </p>
-    </main>
+    </AuthShell>
   );
 }

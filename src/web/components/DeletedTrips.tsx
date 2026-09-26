@@ -41,15 +41,15 @@ export function DeletedTrips({ onRestored }: { readonly onRestored: () => void }
 
   if (trips.length === 0 && !problem) return null;
   return (
-    <section aria-labelledby="deleted-trips-heading">
+    <section aria-labelledby="deleted-trips-heading" className="card deleted-trips">
       <h2 id="deleted-trips-heading">Recently deleted</h2>
       <p className="muted">{RESTORE_WINDOW_NOTE}</p>
       {trips.length > 0 ? (
-        <ul aria-label="Recently deleted Trips">
+        <ul aria-label="Recently deleted Trips" className="row-list">
           {trips.map((trip) => (
             <li key={trip.id}>
-              {deletedTripLine(trip)}{' '}
-              <button type="button" disabled={isRestoring} aria-label={`Restore ${trip.name}`} onClick={() => void restore(trip)}>
+              <span>{deletedTripLine(trip)}</span>{' '}
+              <button type="button" className="btn-small" disabled={isRestoring} aria-label={`Restore ${trip.name}`} onClick={() => void restore(trip)}>
                 Restore
               </button>
             </li>

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api-client';
 import { FormField } from '../components/FormField';
+import { AuthShell } from '../components/AuthShell';
 
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -22,16 +23,18 @@ export function ResetPasswordPage() {
 
   if (isChanged) {
     return (
-      <main>
+      <AuthShell>
         <h1>Choose a new password</h1>
         <p role="status">Your password has been changed.</p>
-        <Link to="/login">Log in</Link>
-      </main>
+        <Link to="/login" className="btn btn-primary">
+          Log in
+        </Link>
+      </AuthShell>
     );
   }
 
   return (
-    <main>
+    <AuthShell>
       <h1>Choose a new password</h1>
       <form onSubmit={(event) => void submit(event)} noValidate>
         <FormField
@@ -45,6 +48,6 @@ export function ResetPasswordPage() {
         <p className="hint">At least 12 characters.</p>
         <button type="submit">Set new password</button>
       </form>
-    </main>
+    </AuthShell>
   );
 }

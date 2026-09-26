@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api-client';
+import { AuthShell } from '../components/AuthShell';
 
 type Confirmation = { readonly state: 'pending' } | { readonly state: 'confirmed' } | { readonly state: 'refused'; readonly message: string };
 
@@ -24,20 +25,26 @@ export function ConfirmEmailPage() {
   }, [token]);
 
   if (confirmation.state === 'pending') {
-    return <main><p>Confirming your email address…</p></main>;
+    return (
+      <AuthShell>
+        <p className="loading">Confirming your email address…</p>
+      </AuthShell>
+    );
   }
   if (confirmation.state === 'refused') {
     return (
-      <main>
+      <AuthShell>
         <h1>This link cannot be used</h1>
         <p role="alert">{confirmation.message}</p>
-      </main>
+      </AuthShell>
     );
   }
   return (
-    <main>
+    <AuthShell>
       <h1>Email address confirmed</h1>
-      <Link to="/trips">Go to your Trips</Link>
-    </main>
+      <Link to="/trips" className="btn btn-primary">
+        Go to your Trips
+      </Link>
+    </AuthShell>
   );
 }

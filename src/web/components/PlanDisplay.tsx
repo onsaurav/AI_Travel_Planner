@@ -9,32 +9,57 @@ import type { PlanActions } from './plan-actions';
  * regenerated, or generated if the Trip grew and it is still empty. The button sits after the Day, not in
  * it, so a Day's own controls are its Activities.
  */
-export function PlanDisplay({ plan, actions }: { readonly plan: PlanView; readonly actions: PlanActions }) {
+export function PlanDisplay({
+  plan,
+  actions,
+}: {
+  readonly plan: PlanView;
+  readonly actions: PlanActions;
+}) {
   const { stay } = plan;
   return (
-    <section aria-labelledby="plan-heading">
-      <h2 id="plan-heading">Plan</h2>
-      <p className="plan-notice">{PLAN_RECOMMENDATION_NOTICE}</p>
-      <h3>Where to stay</h3>
-      <p>
-        {`${stay.accommodationType} in ${stay.suggestedArea}, about ${costLabel(stay.nightlyCostEstimate, plan.currency)} per night`}
-      </p>
-      {plan.days.map((day) => (
-        <div key={day.dayNumber}>
-          <section aria-label={dayHeading(day)}>
-            <h3>{dayHeading(day)}</h3>
-            {day.activities.length === 0 ? <p className="muted">No Activities on this Day yet.</p> : null}
-            <ul>
-              {day.activities.map((activity) => (
-                <ActivityItem key={activity.id} activity={activity} plan={plan} actions={actions} />
-              ))}
-            </ul>
-          </section>
-          <button type="button" disabled={actions.isBusy} onClick={() => actions.onRegenerateDay(day.dayNumber)}>
-            {dayButtonLabel(day)}
-          </button>
-        </div>
-      ))}
+    <section aria-labelledby="plan-heading" className="itinerary">
+      <div className="plan-toolbar">
+        <h2 id="plan-heading">Plan</h2>
+        <button type="button" className="no-print" onClick={() => window.print()}>
+          Print itinerary
+        </button>
+      </div>
+      <div id="print-itinerary">
+        <p className="plan-notice">{PLAN_RECOMMENDATION_NOTICE}</p>
+        <h3>Where to stay</h3>
+        <p>
+          {`${stay.accommodationType} in ${stay.suggestedArea}, about ${costLabel(stay.nightlyCostEstimate, plan.currency)} per night`}
+        </p>
+        {plan.days.map((day) => (
+          <div key={day.dayNumber}>
+            <section aria-label={dayHeading(day)}>
+              <h3>{dayHeading(day)}</h3>
+              {day.activities.length === 0 ? (
+                <p className="muted">No Activities on this Day yet.</p>
+              ) : null}
+              <ul>
+                {day.activities.map((activity) => (
+                  <ActivityItem
+                    key={activity.id}
+                    activity={activity}
+                    plan={plan}
+                    actions={actions}
+                  />
+                ))}
+              </ul>
+            </section>
+            <button
+              type="button"
+              className="no-print"
+              disabled={actions.isBusy}
+              onClick={() => actions.onRegenerateDay(day.dayNumber)}
+            >
+              {dayButtonLabel(day)}
+            </button>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

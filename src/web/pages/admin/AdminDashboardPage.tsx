@@ -1,12 +1,17 @@
 import { Link } from 'react-router-dom';
 import { ADMIN_FUNCTIONS } from '../../../shared/admin-functions';
+import { PageHeader } from '../../components/PageHeader';
 import { MetricsPanel } from './MetricsPanel';
 
-/** The admin functions, and nothing else (REQ-TRV-068). */
+/** The admin functions, metrics and pipeline counts — an operations console (REQ-TRV-068, REQ-TRV-108, REQ-TRV-111). */
 export function AdminDashboardPage() {
   return (
     <>
-      <h1>Admin dashboard</h1>
+      <PageHeader
+        eyebrow="Operations"
+        title="Admin dashboard"
+        lead="Users, Destinations, feedback and today's pipeline."
+      />
       <nav aria-label="Admin functions">
         <ul>
           {ADMIN_FUNCTIONS.map((adminFunction) => (

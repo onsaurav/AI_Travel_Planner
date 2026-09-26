@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api-client';
 import { FormField } from '../components/FormField';
+import { AuthShell } from '../components/AuthShell';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export function LoginPage() {
   };
 
   return (
-    <main>
+    <AuthShell>
       <h1>Log in</h1>
       <form onSubmit={(event) => void submit(event)} noValidate>
         <FormField label="Email address" type="email" value={email} onChange={setEmail} autoComplete="email" />
@@ -40,6 +41,6 @@ export function LoginPage() {
       <p>
         New here? <Link to="/register">Create an account</Link>
       </p>
-    </main>
+    </AuthShell>
   );
 }

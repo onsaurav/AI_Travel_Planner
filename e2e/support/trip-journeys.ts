@@ -1,5 +1,10 @@
 import { expect, type Browser, type Page } from '@playwright/test';
-import { addDestinationThroughUi, aTravelerInNewContext, logInAsAdministrator, uniqueName } from './admin-journeys';
+import {
+  addDestinationThroughUi,
+  aTravelerInNewContext,
+  logInAsAdministrator,
+  uniqueName,
+} from './admin-journeys';
 import { logInThroughUi } from './journeys';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -44,7 +49,12 @@ export interface TripDetails {
   readonly currency?: string;
 }
 
-export async function chooseDestination(page: Page, typed: string, destinationName: string, country = 'Japan'): Promise<void> {
+export async function chooseDestination(
+  page: Page,
+  typed: string,
+  destinationName: string,
+  country = 'Japan',
+): Promise<void> {
   await page.getByLabel('Destination', { exact: true }).fill(typed);
   await page
     .getByRole('list', { name: 'Destination suggestions' })
@@ -57,7 +67,12 @@ export async function fillNewTrip(page: Page, trip: TripDetails): Promise<void> 
   await page.goto('/trips/new');
   await expect(page.getByRole('heading', { name: 'New Trip' })).toBeVisible();
   await page.getByLabel('Trip name').fill(trip.name);
-  await chooseDestination(page, trip.typed ?? trip.destinationName, trip.destinationName, trip.country);
+  await chooseDestination(
+    page,
+    trip.typed ?? trip.destinationName,
+    trip.destinationName,
+    trip.country,
+  );
   await page.getByLabel('Start date').fill(trip.startDate ?? daysFromToday(7));
   await page.getByLabel('End date').fill(trip.endDate ?? daysFromToday(10));
   await page.getByLabel('Adults').fill(trip.adults ?? '2');
@@ -66,10 +81,12 @@ export async function fillNewTrip(page: Page, trip: TripDetails): Promise<void> 
   await page.getByLabel('Currency').selectOption(trip.currency ?? 'USD');
 }
 
+export const listedTrip = (page: Page, name: string) => page.getByRole('article', { name });
+
 export async function createTripThroughUi(page: Page, trip: TripDetails): Promise<void> {
   await fillNewTrip(page, trip);
   await page.getByRole('button', { name: 'Create Trip' }).click();
-  await expect(page.getByRole('row', { name: new RegExp(trip.name) })).toBeVisible();
+  await expect(listedTrip(page, trip.name)).toBeVisible();
 }
 
 export async function openTrip(page: Page, name: string): Promise<void> {

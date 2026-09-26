@@ -1,6 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { E2E_AI_API_KEY } from '../playwright.config';
-import { generatePlan, aTripReadyToPlan, expectDaysShown, setAiScript, trackForeignRequests, TRIP_DAY_COUNT } from './support/plan-journeys';
+import {
+  generatePlan,
+  aTripReadyToPlan,
+  expectDaysShown,
+  setAiScript,
+  trackForeignRequests,
+  TRIP_DAY_COUNT,
+} from './support/plan-journeys';
 import { daysFromToday } from './support/trip-journeys';
 
 test.afterEach(async () => {
@@ -25,7 +32,9 @@ test.describe('generating a Plan', () => {
     ]);
   });
 
-  test('shows that generation is under way, and stops the button being pressed again, until the AI answers', async ({ browser }) => {
+  test('shows that generation is under way, and stops the button being pressed again, until the AI answers', async ({
+    browser,
+  }) => {
     const { page } = await aTripReadyToPlan(browser, 'plan-busy');
     await setAiScript({ mode: 'hang' });
 
@@ -42,10 +51,15 @@ test.describe('generating a Plan', () => {
   test('the AI key appears in no page or script the application serves', async ({ request }) => {
     const index = await request.get('/');
     const html = await index.text();
-    const assetPaths = [...html.matchAll(/(?:src|href)="(\/[^"]+)"/g)].flatMap((match) => (match[1] ? [match[1]] : []));
+    const assetPaths = [...html.matchAll(/(?:src|href)="(\/[^"]+)"/g)].flatMap((match) =>
+      match[1] ? [match[1]] : [],
+    );
     expect(assetPaths.some((path) => path.endsWith('.js'))).toBe(true);
 
-    const served = [html, ...(await Promise.all(assetPaths.map(async (path) => (await request.get(path)).text())))];
+    const served = [
+      html,
+      ...(await Promise.all(assetPaths.map(async (path) => (await request.get(path)).text()))),
+    ];
 
     for (const body of served) {
       expect(body).not.toContain(E2E_AI_API_KEY);
@@ -59,7 +73,10 @@ test.describe('generating a Plan', () => {
     baseURL,
   }) => {
     const { page } = await aTripReadyToPlan(browser, 'plan-network');
-    const foreignRequests = trackForeignRequests(page, new URL(baseURL ?? 'http://127.0.0.1:5174').origin);
+    const foreignRequests = trackForeignRequests(
+      page,
+      new URL(baseURL ?? 'http://127.0.0.1:5174').origin,
+    );
 
     await generatePlan(page);
     await expectDaysShown(page);
@@ -68,7 +85,9 @@ test.describe('generating a Plan', () => {
   });
 
   // @covers REQ-TRV-031@v1
-  test('a generated Plan is shown with the notice that it is a recommendation, not a booking', async ({ browser }) => {
+  test('a generated Plan is shown with the notice that it is a recommendation, not a booking', async ({
+    browser,
+  }) => {
     const { page } = await aTripReadyToPlan(browser, 'plan-notice');
 
     await generatePlan(page);
@@ -89,7 +108,13 @@ test.describe('generating a Plan', () => {
     await firstDay.getByRole('button', { name: '09:00 Morning temple visit' }).click();
 
     const details = firstDay.getByRole('term').filter({ hasText: /./ });
-    await expect(details).toHaveText(['Time', 'Duration', 'Estimated cost', 'Location', 'Why it was recommended']);
+    await expect(details).toHaveText([
+      'Time',
+      'Duration',
+      'Estimated cost',
+      'Location',
+      'Why it was recommended',
+    ]);
     await expect(firstDay.getByText('1 h 30 min')).toBeVisible();
     await expect(firstDay.getByText('10 USD (an estimate, not a price)')).toBeVisible();
     await expect(firstDay.getByText('City centre')).toBeVisible();
@@ -99,7 +124,9 @@ test.describe('generating a Plan', () => {
 
 test.describe('when the AI fails', () => {
   // @covers REQ-TRV-029@v2
-  test('shows the fallback message, leaves the Trip as it was, and offers no way to build a Plan by hand', async ({ browser }) => {
+  test('shows the fallback message, leaves the Trip as it was, and offers no way to build a Plan by hand', async ({
+    browser,
+  }) => {
     const { page, tripName } = await aTripReadyToPlan(browser, 'plan-fallback');
     await setAiScript({ mode: 'error' });
 
@@ -119,7 +146,9 @@ test.describe('when the AI fails', () => {
 
     await generatePlan(page);
 
-    await expect(page.getByRole('alert')).toContainText('The AI planner is unavailable right now', { timeout: 10_000 });
+    await expect(page.getByRole('alert')).toContainText('The AI planner is unavailable right now', {
+      timeout: 10_000,
+    });
   });
 
   // @covers REQ-TRV-029@v2
@@ -137,12 +166,16 @@ test.describe('when the AI fails', () => {
   });
 
   // @covers REQ-TRV-030@v2
-  test('the Trip list and a saved Trip still load, with their data, while the AI does not respond', async ({ browser }) => {
+  test('the Trip list and a saved Trip still load, with their data, while the AI does not respond', async ({
+    browser,
+  }) => {
     const { page, tripName, destinationName } = await aTripReadyToPlan(browser, 'plan-down');
     await setAiScript({ mode: 'hang' });
 
     await page.goto('/trips');
-    await expect(page.getByRole('row', { name: new RegExp(tripName) })).toContainText(`${destinationName}, Japan`);
+    await expect(page.getByRole('article', { name: tripName })).toContainText(
+      `${destinationName}, Japan`,
+    );
     await page.getByRole('link', { name: tripName }).click();
 
     await expect(page.getByRole('heading', { name: tripName })).toBeVisible();

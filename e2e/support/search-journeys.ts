@@ -1,5 +1,11 @@
 import { expect, type Browser, type Locator, type Page } from '@playwright/test';
-import { aConfirmedTravelerOnTrips, aDestinationAddedByAdministrator, daysFromToday, fillNewTrip, type TripDetails } from './trip-journeys';
+import {
+  aConfirmedTravelerOnTrips,
+  aDestinationAddedByAdministrator,
+  daysFromToday,
+  fillNewTrip,
+  type TripDetails,
+} from './trip-journeys';
 import { tick } from './preference-journeys';
 
 export interface DestinationToAdd {
@@ -12,7 +18,10 @@ export async function aTravelerWithDestinations(
   browser: Browser,
   label: string,
   toAdd: readonly DestinationToAdd[],
-): Promise<{ readonly page: Page; readonly destination: (base: string) => { name: string; country: string } }> {
+): Promise<{
+  readonly page: Page;
+  readonly destination: (base: string) => { name: string; country: string };
+}> {
   const destinations: Record<string, { name: string; country: string }> = {};
   for (const { base, country } of toAdd) {
     const { name } = await aDestinationAddedByAdministrator(browser, base, country);
@@ -49,13 +58,15 @@ export async function createTrip(page: Page, trip: TripToCreate): Promise<void> 
   await fillNewTrip(page, details);
   if (trip.style) await tick(page, 'Travel style', [trip.style]);
   await page.getByRole('button', { name: 'Create Trip' }).click();
-  await expect(page.getByRole('row', { name: new RegExp(trip.name) })).toBeVisible();
+  await expect(page.getByRole('article', { name: trip.name })).toBeVisible();
 }
 
-export const searchFilters = (page: Page): Locator => page.getByRole('search', { name: 'Search and filter Trips' });
+export const searchFilters = (page: Page): Locator =>
+  page.getByRole('search', { name: 'Search and filter Trips' });
 
 /** The names of the Trips the list is showing, in order. */
-export const listedTrips = (page: Page): Locator => page.getByRole('table').getByRole('link');
+export const listedTrips = (page: Page): Locator =>
+  page.getByRole('list', { name: 'Trip list' }).getByRole('heading').getByRole('link');
 
 export async function searchFor(page: Page, text: string): Promise<void> {
   await searchFilters(page).getByLabel('Search Trips', { exact: true }).fill(text);

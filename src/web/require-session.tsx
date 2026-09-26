@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, NavLink, useNavigate } from 'react-router-dom';
 import type { Role } from '../shared/admin-functions';
 import { api } from './api-client';
 
@@ -32,7 +32,7 @@ export function RequireSession({ children }: { readonly children: ReactNode }) {
   const session = useSession();
 
   if (session.state === 'checking') {
-    return <p>Loading…</p>;
+    return <p className="loading page-loading">Loading…</p>;
   }
   if (session.state === 'logged-out') {
     return <Navigate to="/login" replace />;
@@ -48,7 +48,7 @@ export function RequireAdministrator({ children }: { readonly children: ReactNod
   const session = useSession();
 
   if (session.state === 'checking') {
-    return <p>Loading…</p>;
+    return <p className="loading page-loading">Loading…</p>;
   }
   if (session.state === 'logged-out') {
     return <Navigate to="/login" replace />;
@@ -76,10 +76,10 @@ function SignedInLayout({ role, children }: { readonly role: Role; readonly chil
             AI Travel Planner
           </Link>
           <nav aria-label="Main">
-            <Link to="/trips">Trips</Link>
-            <Link to="/destinations">Destinations</Link>
-            <Link to="/profile">Profile</Link>
-            {role === 'administrator' ? <Link to="/admin">Admin</Link> : null}
+            <NavLink to="/trips">Trips</NavLink>
+            <NavLink to="/destinations">Destinations</NavLink>
+            <NavLink to="/profile">Profile</NavLink>
+            {role === 'administrator' ? <NavLink to="/admin">Admin</NavLink> : null}
             <button type="button" onClick={() => void logOut()}>
               Log out
             </button>

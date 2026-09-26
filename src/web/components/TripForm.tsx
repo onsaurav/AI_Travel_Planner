@@ -16,7 +16,6 @@ import { FormField } from './FormField';
 import { SelectField } from './SelectField';
 
 /** The client's wording for what the budget covers (ANSWERS.md, "What the budget covers"). */
-/** The client's wording for what the budget covers (ANSWERS.md, "What the budget covers"). */
 export const BUDGET_NOTE =
   'One total for the whole group, covering costs at the Destination only. It excludes flights or other travel to and from the Destination.';
 
@@ -43,86 +42,100 @@ export function TripForm({ state, dispatch, submitLabel, onSubmit, isSaving = fa
   };
 
   return (
-    <form onSubmit={submit} noValidate>
-      <FormField label="Trip name" value={values.name} onChange={change('name')} error={errorFor('name')} />
-      <DestinationPicker
-        selectedLabel={values.destinationLabel}
-        error={errorFor('destinationId')}
-        onChoose={(destination) => {
-          dispatch({ type: 'changed', field: 'destinationId', value: destination.id });
-          dispatch({ type: 'changed', field: 'destinationLabel', value: `${destination.name}, ${destination.country}` });
-        }}
-      />
-      <FormField label="Start date" type="date" value={values.startDate} onChange={change('startDate')} error={errorFor('startDate')} />
-      <FormField label="End date" type="date" value={values.endDate} onChange={change('endDate')} error={errorFor('endDate')} />
-      <FormField label="Adults" type="number" value={values.adults} onChange={change('adults')} error={errorFor('adults')} />
-      <FormField label="Children" type="number" value={values.children} onChange={change('children')} error={errorFor('children')} />
-      <FormField
-        label="Budget"
-        type="number"
-        value={values.budget}
-        onChange={change('budget')}
-        error={errorFor('budget')}
-        description={BUDGET_NOTE}
-      />
-      <SelectField
-        label="Currency"
-        options={CURRENCIES}
-        value={values.currency}
-        onChange={change('currency')}
-        emptyLabel="Choose a currency"
-        error={errorFor('currency')}
-      />
-      <CheckboxGroup
-        legend="Travel style"
-        options={TRAVEL_STYLES}
-        chosen={values.travelStyles}
-        onToggle={toggle('travelStyles')}
-        error={errorFor('travelStyles')}
-      />
-      <CheckboxGroup
-        legend="Interests"
-        options={INTERESTS}
-        chosen={values.interests}
-        onToggle={toggle('interests')}
-        error={errorFor('interests')}
-      />
-      <CheckboxGroup
-        legend="Food preference"
-        options={FOOD_PREFERENCES}
-        chosen={values.foodPreferences}
-        onToggle={toggle('foodPreferences')}
-        error={errorFor('foodPreferences')}
-      />
-      <CheckboxGroup
-        legend="Transportation"
-        options={TRANSPORTATION}
-        chosen={values.transportation}
-        onToggle={toggle('transportation')}
-        error={errorFor('transportation')}
-      />
-      <fieldset className="choice-group">
-        <legend>Accommodation preferences</legend>
-        {ACCOMMODATION_FIELDS.map((field) => (
+    <form onSubmit={submit} noValidate className="trip-form">
+      <div className="form-section">
+        <h2 className="form-section-title">Trip details</h2>
+        <FormField label="Trip name" value={values.name} onChange={change('name')} error={errorFor('name')} />
+        <DestinationPicker
+          selectedLabel={values.destinationLabel}
+          error={errorFor('destinationId')}
+          onChoose={(destination) => {
+            dispatch({ type: 'changed', field: 'destinationId', value: destination.id });
+            dispatch({ type: 'changed', field: 'destinationLabel', value: `${destination.name}, ${destination.country}` });
+          }}
+        />
+        <div className="field-row">
+          <FormField label="Start date" type="date" value={values.startDate} onChange={change('startDate')} error={errorFor('startDate')} />
+          <FormField label="End date" type="date" value={values.endDate} onChange={change('endDate')} error={errorFor('endDate')} />
+        </div>
+        <div className="field-row">
+          <FormField label="Adults" type="number" value={values.adults} onChange={change('adults')} error={errorFor('adults')} />
+          <FormField label="Children" type="number" value={values.children} onChange={change('children')} error={errorFor('children')} />
+        </div>
+        <div className="field-row">
           <FormField
-            key={field}
-            label={ACCOMMODATION_LABELS[field]}
-            value={values[ACCOMMODATION_FORM_FIELDS[field]]}
-            onChange={change(ACCOMMODATION_FORM_FIELDS[field])}
+            label="Budget"
+            type="number"
+            value={values.budget}
+            onChange={change('budget')}
+            error={errorFor('budget')}
+            description={BUDGET_NOTE}
           />
-        ))}
-        {errorFor('accommodation') ? <p className="field-error">{errorFor('accommodation')}</p> : null}
-      </fieldset>
-      <button type="submit" disabled={isSaving}>
-        {submitLabel}
-      </button>
-      {isSaving ? <p role="status">Saving your changes… this can take up to two minutes if the Plan is rewritten.</p> : null}
-      {outcome.kind === 'saved' && !isSaving ? <p role="status">{outcome.message}</p> : null}
-      {outcome.kind === 'failed' ? <p role="alert">{outcome.message}</p> : null}
+          <SelectField
+            label="Currency"
+            options={CURRENCIES}
+            value={values.currency}
+            onChange={change('currency')}
+            emptyLabel="Choose a currency"
+            error={errorFor('currency')}
+          />
+        </div>
+      </div>
+      <div className="form-section">
+        <h2 className="form-section-title">Preferences</h2>
+        <CheckboxGroup
+          legend="Travel style"
+          options={TRAVEL_STYLES}
+          chosen={values.travelStyles}
+          onToggle={toggle('travelStyles')}
+          error={errorFor('travelStyles')}
+        />
+        <CheckboxGroup
+          legend="Interests"
+          options={INTERESTS}
+          chosen={values.interests}
+          onToggle={toggle('interests')}
+          error={errorFor('interests')}
+        />
+        <CheckboxGroup
+          legend="Food preference"
+          options={FOOD_PREFERENCES}
+          chosen={values.foodPreferences}
+          onToggle={toggle('foodPreferences')}
+          error={errorFor('foodPreferences')}
+        />
+        <CheckboxGroup
+          legend="Transportation"
+          options={TRANSPORTATION}
+          chosen={values.transportation}
+          onToggle={toggle('transportation')}
+          error={errorFor('transportation')}
+        />
+        <fieldset className="choice-group field-group">
+          <legend>Accommodation preferences</legend>
+          {ACCOMMODATION_FIELDS.map((field) => (
+            <FormField
+              key={field}
+              label={ACCOMMODATION_LABELS[field]}
+              value={values[ACCOMMODATION_FORM_FIELDS[field]]}
+              onChange={change(ACCOMMODATION_FORM_FIELDS[field])}
+            />
+          ))}
+          {errorFor('accommodation') ? <p className="field-error">{errorFor('accommodation')}</p> : null}
+        </fieldset>
+      </div>
+      <div className="form-footer">
+        <button type="submit" disabled={isSaving}>
+          {submitLabel}
+        </button>
+        {isSaving ? <p role="status">Saving your changes… this can take up to two minutes if the Plan is rewritten.</p> : null}
+        {outcome.kind === 'saved' && !isSaving ? <p role="status">{outcome.message}</p> : null}
+        {outcome.kind === 'failed' ? <p role="alert">{outcome.message}</p> : null}
+      </div>
       {outcome.kind === 'needs-confirmation' && onConfirmPlanChange ? (
-        <div role="group" aria-label="Confirm change to the Plan" className="plan-notice">
+        <div role="group" aria-label="Confirm change to the Plan" className="plan-notice confirm-box">
           <p>{outcome.message}</p>
-          <button type="button" disabled={isSaving} onClick={onConfirmPlanChange}>
+          <button type="button" className="btn-primary" disabled={isSaving} onClick={onConfirmPlanChange}>
             Change the Trip and its Plan
           </button>
           <button type="button" onClick={() => dispatch({ type: 'dismissed' })}>

@@ -1,0 +1,36 @@
+id: CHG-0004
+raised: 2026-09-26
+stream: variation
+source: "Developer (Kartik Chandra Biswas), session 2026-09-26: the delivered UI is not a product a travel business can run; improvements must be in the brain, slices and the application, not a side note"
+raw: >-
+  The system and business planned is not good enough. Improve it. Those
+  improvements must be in the brain, the slices and the system.
+context: >-
+  Functions from BRD v1.0 exist (accounts, trips, plans, admin). The screens
+  are still a homework form: spreadsheet Trip list, stacked headings for a
+  Plan, admin as a bullet list of links. A restyle with no REQ- id is not
+  delivery. This change adds six requirements and slice 17 so the product
+  quality is agreed, planned, built and tested like everything else.
+  Explicitly not in this change: weather, flights, hotels, maps, calendar
+  sync, voice, native mobile, risk alerts, booking providers, Travel
+  Consultant role (REQ-TRV-082..090, REQ-TRV-079).
+affects: []
+creates: [REQ-TRV-106, REQ-TRV-107, REQ-TRV-108, REQ-TRV-109, REQ-TRV-110, REQ-TRV-111]
+analysis:
+  dependants: []
+  tests_invalidated: 0
+  estimate: >-
+    One slice after 16. Layout and one admin count API. Existing behaviour
+    stays. e2e and unit tests for the six new ids.
+decision: absorb
+commercial: >-
+  Absorbed for the demo: BRD §3 already asked for an engaging experience and
+  an administrator view. This makes that testable. Charge if a paying client
+  later asks for maps, booking or a Consultant role.
+outcome:
+  - REQ-TRV-106: v1 agreed, slice 17
+  - REQ-TRV-107: v1 agreed, slice 17
+  - REQ-TRV-108: v1 agreed, slice 17
+  - REQ-TRV-109: v1 agreed, slice 17
+  - REQ-TRV-110: v1 agreed, slice 17
+  - REQ-TRV-111: v1 agreed, slice 17
