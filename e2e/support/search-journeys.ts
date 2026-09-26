@@ -58,15 +58,14 @@ export async function createTrip(page: Page, trip: TripToCreate): Promise<void> 
   await fillNewTrip(page, details);
   if (trip.style) await tick(page, 'Travel style', [trip.style]);
   await page.getByRole('button', { name: 'Create Trip' }).click();
-  await expect(page.getByRole('article', { name: trip.name })).toBeVisible();
+  await expect(page.getByRole('row', { name: new RegExp(trip.name) })).toBeVisible();
 }
 
 export const searchFilters = (page: Page): Locator =>
   page.getByRole('search', { name: 'Search and filter Trips' });
 
 /** The names of the Trips the list is showing, in order. */
-export const listedTrips = (page: Page): Locator =>
-  page.getByRole('list', { name: 'Trip list' }).getByRole('heading').getByRole('link');
+export const listedTrips = (page: Page): Locator => page.getByRole('table').getByRole('link');
 
 export async function searchFor(page: Page, text: string): Promise<void> {
   await searchFilters(page).getByLabel('Search Trips', { exact: true }).fill(text);

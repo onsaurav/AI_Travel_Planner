@@ -30,7 +30,7 @@ test.describe('the Traveler workspace', () => {
 
     await expect(page.getByRole('heading', { name: 'Your Trips' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'New Trip' }).first()).toBeInViewport();
-    const card = page.getByRole('article', { name: tripName });
+    const card = page.getByRole('row', { name: new RegExp(tripName) });
     await expect(card).toContainText(tripName);
     await expect(card).toContainText(`${destination}, Japan`);
     await expect(card).toContainText(' to ');

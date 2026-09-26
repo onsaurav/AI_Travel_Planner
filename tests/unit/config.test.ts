@@ -46,7 +46,11 @@ describe('how long the application waits for the AI', () => {
 describe('the AI settings at startup', () => {
   // @covers REQ-TRV-026@v1
   test('reads the provider, key, model, cost rates and the limits the client asked to be configurable', () => {
-    const config = loadConfig({ ...ANTHROPIC, AI_TIMEOUT_MS: '90000', AI_DESTINATION_TEXT_MAX_CHARS: '500' });
+    const config = loadConfig({
+      ...ANTHROPIC,
+      AI_TIMEOUT_MS: '90000',
+      AI_DESTINATION_TEXT_MAX_CHARS: '500',
+    });
 
     expect(config).toMatchObject({
       AI_PROVIDER: 'anthropic',
@@ -69,7 +73,12 @@ describe('the AI settings at startup', () => {
   });
 
   // @covers REQ-TRV-026@v1
-  test.each(['AI_API_KEY', 'AI_MODEL', 'AI_INPUT_COST_MICRO_USD_PER_MTOK', 'AI_OUTPUT_COST_MICRO_USD_PER_MTOK'])(
+  test.each([
+    'AI_API_KEY',
+    'AI_MODEL',
+    'AI_INPUT_COST_MICRO_USD_PER_MTOK',
+    'AI_OUTPUT_COST_MICRO_USD_PER_MTOK',
+  ])(
     'refuses to start without %s when the provider is anthropic, naming it and never the key',
     (name) => {
       const message = problemsWith(without(ANTHROPIC, name));
@@ -101,7 +110,35 @@ describe('the AI settings at startup', () => {
 
   // @covers REQ-TRV-026@v1
   test('starts with the scripted provider only when NODE_ENV is test, and needs no key', () => {
-    expect(loadConfig({ ...SCRIPTED, NODE_ENV: 'test' })).toMatchObject({ AI_PROVIDER: 'scripted' });
+    expect(loadConfig({ ...SCRIPTED, NODE_ENV: 'test' })).toMatchObject({
+      AI_PROVIDER: 'scripted',
+    });
+  });
+
+  // @covers REQ-TRV-117@v1
+  test('starts with Ollama when the model and base URL are set, and needs no key', () => {
+    expect(
+      loadConfig({
+        ...BASE,
+        AI_PROVIDER: 'ollama',
+        AI_MODEL: 'llama3.2',
+        OLLAMA_BASE_URL: 'http://127.0.0.1:11434',
+      }),
+    ).toMatchObject({
+      AI_PROVIDER: 'ollama',
+      AI_MODEL: 'llama3.2',
+      OLLAMA_BASE_URL: 'http://127.0.0.1:11434',
+    });
+  });
+
+  // @covers REQ-TRV-117@v1
+  test('refuses to start with Ollama when the model or the base URL is missing', () => {
+    expect(
+      problemsWith({ ...BASE, AI_PROVIDER: 'ollama', OLLAMA_BASE_URL: 'http://127.0.0.1:11434' }),
+    ).toContain('AI_MODEL');
+    expect(problemsWith({ ...BASE, AI_PROVIDER: 'ollama', AI_MODEL: 'llama3.2' })).toContain(
+      'OLLAMA_BASE_URL',
+    );
   });
 });
 
@@ -110,21 +147,37 @@ const DEVELOPMENT = { ...SCRIPTED, NODE_ENV: 'test', APP_ENV: 'development' };
 describe('the mail settings in development', () => {
   // @covers REQ-TRV-054@v1
   test('accept a file outbox, which no real mail service ever sees', () => {
-    expect(loadConfig(DEVELOPMENT)).toMatchObject({ APP_ENV: 'development', EMAIL_TRANSPORT: 'file' });
+    expect(loadConfig(DEVELOPMENT)).toMatchObject({
+      APP_ENV: 'development',
+      EMAIL_TRANSPORT: 'file',
+    });
   });
 
   // @covers REQ-TRV-054@v1
-  test.each(['127.0.0.1', 'localhost'])('accept SMTP to %s, where a test inbox such as Mailpit listens', (host) => {
-    const env = { ...DEVELOPMENT, EMAIL_TRANSPORT: 'smtp', SMTP_HOST: host, SMTP_PORT: '1025' };
+  test.each(['127.0.0.1', 'localhost'])(
+    'accept SMTP to %s, where a test inbox such as Mailpit listens',
+    (host) => {
+      const env = { ...DEVELOPMENT, EMAIL_TRANSPORT: 'smtp', SMTP_HOST: host, SMTP_PORT: '1025' };
 
-    expect(loadConfig(env)).toMatchObject({ EMAIL_TRANSPORT: 'smtp', SMTP_HOST: host });
-  });
+      expect(loadConfig(env)).toMatchObject({ EMAIL_TRANSPORT: 'smtp', SMTP_HOST: host });
+    },
+  );
 
   // @covers REQ-TRV-054@v1
-  test.each(['smtp.sendgrid.net', 'email-smtp.ap-southeast-2.amazonaws.com', '10.0.0.5', 'localhost.evil.example'])(
+  test.each([
+    'smtp.sendgrid.net',
+    'email-smtp.ap-southeast-2.amazonaws.com',
+    '10.0.0.5',
+    'localhost.evil.example',
+  ])(
     'refuse to start with SMTP to %s, so development mail is never handed to a transactional service',
     (host) => {
-      const message = problemsWith({ ...DEVELOPMENT, EMAIL_TRANSPORT: 'smtp', SMTP_HOST: host, SMTP_PORT: '587' });
+      const message = problemsWith({
+        ...DEVELOPMENT,
+        EMAIL_TRANSPORT: 'smtp',
+        SMTP_HOST: host,
+        SMTP_PORT: '587',
+      });
 
       expect(message).toContain('SMTP_HOST');
       expect(message).toMatch(/development/i);
@@ -133,9 +186,18 @@ describe('the mail settings in development', () => {
 
   // @covers REQ-TRV-054@v1
   test('leave production free to use any SMTP host', () => {
-    const env = { ...BASE, AI_PROVIDER: 'anthropic', AI_API_KEY: KEY, AI_MODEL: 'a-model', AI_INPUT_COST_MICRO_USD_PER_MTOK: '1', AI_OUTPUT_COST_MICRO_USD_PER_MTOK: '1' };
+    const env = {
+      ...BASE,
+      AI_PROVIDER: 'anthropic',
+      AI_API_KEY: KEY,
+      AI_MODEL: 'a-model',
+      AI_INPUT_COST_MICRO_USD_PER_MTOK: '1',
+      AI_OUTPUT_COST_MICRO_USD_PER_MTOK: '1',
+    };
 
-    expect(loadConfig({ ...env, EMAIL_TRANSPORT: 'smtp', SMTP_HOST: 'smtp.sendgrid.net' })).toMatchObject({ SMTP_HOST: 'smtp.sendgrid.net' });
+    expect(
+      loadConfig({ ...env, EMAIL_TRANSPORT: 'smtp', SMTP_HOST: 'smtp.sendgrid.net' }),
+    ).toMatchObject({ SMTP_HOST: 'smtp.sendgrid.net' });
   });
 
   // @covers REQ-TRV-054@v1
@@ -148,7 +210,9 @@ describe('the mail settings in development', () => {
 describe('the timezone and the reminder check', () => {
   // @covers REQ-TRV-057@v1
   test('read the configured timezone', () => {
-    expect(loadConfig({ ...ANTHROPIC, APP_TIMEZONE: 'America/Los_Angeles' })).toMatchObject({ APP_TIMEZONE: 'America/Los_Angeles' });
+    expect(loadConfig({ ...ANTHROPIC, APP_TIMEZONE: 'America/Los_Angeles' })).toMatchObject({
+      APP_TIMEZONE: 'America/Los_Angeles',
+    });
   });
 
   // @covers REQ-TRV-057@v1
@@ -160,7 +224,9 @@ describe('the timezone and the reminder check', () => {
   // @covers REQ-TRV-057@v1
   test('check for due reminders every 15 minutes unless told otherwise', () => {
     expect(loadConfig(ANTHROPIC).REMINDER_CHECK_INTERVAL_MS).toBe(900_000);
-    expect(loadConfig({ ...ANTHROPIC, REMINDER_CHECK_INTERVAL_MS: '1000' }).REMINDER_CHECK_INTERVAL_MS).toBe(1000);
+    expect(
+      loadConfig({ ...ANTHROPIC, REMINDER_CHECK_INTERVAL_MS: '1000' }).REMINDER_CHECK_INTERVAL_MS,
+    ).toBe(1000);
   });
 });
 
@@ -175,7 +241,9 @@ describe('the public address in production', () => {
 
   // @covers REQ-TRV-057@v1
   test('may be plain http in development, where the application runs on the developer’s own machine', () => {
-    expect(loadConfig({ ...DEVELOPMENT, APP_BASE_URL: 'http://127.0.0.1:3000' })).toMatchObject({ APP_BASE_URL: 'http://127.0.0.1:3000' });
+    expect(loadConfig({ ...DEVELOPMENT, APP_BASE_URL: 'http://127.0.0.1:3000' })).toMatchObject({
+      APP_BASE_URL: 'http://127.0.0.1:3000',
+    });
   });
 });
 
@@ -187,9 +255,14 @@ describe('how often deleted Trips are removed for good', () => {
 
   // @covers REQ-TRV-100@v1
   test('can be set, so a test need not wait an hour, and cannot be set beyond what a timer can wait', () => {
-    expect(loadConfig({ ...ANTHROPIC, TRIP_PURGE_INTERVAL_MS: '500' }).TRIP_PURGE_INTERVAL_MS).toBe(500);
-    expect(problemsWith({ ...ANTHROPIC, TRIP_PURGE_INTERVAL_MS: '99999999999' })).toContain('TRIP_PURGE_INTERVAL_MS');
-    expect(problemsWith({ ...ANTHROPIC, TRIP_PURGE_INTERVAL_MS: '0' })).toContain('TRIP_PURGE_INTERVAL_MS');
+    expect(loadConfig({ ...ANTHROPIC, TRIP_PURGE_INTERVAL_MS: '500' }).TRIP_PURGE_INTERVAL_MS).toBe(
+      500,
+    );
+    expect(problemsWith({ ...ANTHROPIC, TRIP_PURGE_INTERVAL_MS: '99999999999' })).toContain(
+      'TRIP_PURGE_INTERVAL_MS',
+    );
+    expect(problemsWith({ ...ANTHROPIC, TRIP_PURGE_INTERVAL_MS: '0' })).toContain(
+      'TRIP_PURGE_INTERVAL_MS',
+    );
   });
 });
-

@@ -1,0 +1,31 @@
+id: CHG-0006
+raised: 2026-09-26
+stream: variation
+source: "Developer (Kartik Chandra Biswas), session 2026-09-26: previous recovery was not followable; design and business flow must change; use Ollama for chat"
+raw: >-
+  Again bullshit plan, make it good followable and proper and all design
+  business flow need to change dramatically and use ollama for chat.
+context: >-
+  CHG-0005 named the next job and moved Chat. The Trip is still a pile of
+  panels, and live Chat still needs an Anthropic key. This change adds two
+  requirements on slice 18: four named desk steps (Trip → Itinerary →
+  Adjust → Hand over), and Ollama as the live AI for Generate Plan and
+  Chat. Not in this change: maps, weather, flights, hotels, booking,
+  Travel Consultant (REQ-TRV-079, 082-090). Installing Ollama and pulling
+  a model is operations.
+affects: [REQ-TRV-026, REQ-TRV-035, REQ-TRV-112]
+creates: [REQ-TRV-117, REQ-TRV-118]
+analysis:
+  dependants: [REQ-TRV-026, REQ-TRV-035]
+  tests_invalidated: 0
+  estimate: >-
+    Same slice 18. New Ollama adapter behind the existing AiService.
+    Four-step desk on the Trip page. Chat region and control names stay.
+decision: absorb
+commercial: >-
+  Absorbed for the demo: chat and Plan generation were already sold.
+  Ollama is how the desk actually talks. Charge if they later want
+  booking, maps, or a Consultant role.
+outcome:
+  - REQ-TRV-117: v1 agreed, slice 18
+  - REQ-TRV-118: v1 agreed, slice 18

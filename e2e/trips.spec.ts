@@ -29,7 +29,7 @@ test.describe('creating a Trip', () => {
       currency: 'USD',
     });
 
-    const card = page.getByRole('article', { name: tripName });
+    const card = page.getByRole('row', { name: new RegExp(tripName) });
     await expect(card).toContainText(`${destination}, Japan`);
     await expect(card).toContainText('4 travelers');
     await expect(card).toContainText('5000 USD');

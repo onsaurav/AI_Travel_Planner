@@ -1,0 +1,29 @@
+id: CHG-0007
+raised: 2026-09-26
+stream: variation
+source: "Developer (Kartik Chandra Biswas), session 2026-09-26: Your Trips is not a page; record it SDLC-wise so tests are what the application follows"
+raw: >-
+  Isn't it ugly. Plan for tests that will be followed in the application,
+  SDLC-wise, so there is a trace.
+context: >-
+  CHG-0004 said Your Trips is a workspace (REQ-TRV-106). The running page
+  is still a stacked search form with the one Trip under it. Search and
+  filter stay (REQ-TRV-076, 077). This change adds two requirements on
+  slice 18: the list is the page, and each row names the next desk job.
+  Tests with @covers are the plan the application follows. Not in this
+  change: maps, weather, flights, hotels, booking, Consultant.
+affects: [REQ-TRV-106, REQ-TRV-076, REQ-TRV-077]
+creates: [REQ-TRV-119, REQ-TRV-120]
+analysis:
+  dependants: [REQ-TRV-106]
+  tests_invalidated: 0
+  estimate: >-
+    Same slice 18. Search labels and table rows stay. New unit and e2e
+    for 119 and 120.
+decision: absorb
+commercial: >-
+  Absorbed: BRD §3 already asked for a workspace. Charge if they later
+  want booking, maps, or a Consultant role.
+outcome:
+  - REQ-TRV-119: v1 agreed, slice 18
+  - REQ-TRV-120: v1 agreed, slice 18

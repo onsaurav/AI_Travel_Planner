@@ -81,7 +81,8 @@ export async function fillNewTrip(page: Page, trip: TripDetails): Promise<void> 
   await page.getByLabel('Currency').selectOption(trip.currency ?? 'USD');
 }
 
-export const listedTrip = (page: Page, name: string) => page.getByRole('article', { name });
+export const listedTrip = (page: Page, name: string) =>
+  page.getByRole('row', { name: new RegExp(name) });
 
 export async function createTripThroughUi(page: Page, trip: TripDetails): Promise<void> {
   await fillNewTrip(page, trip);

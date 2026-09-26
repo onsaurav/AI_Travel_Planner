@@ -363,3 +363,21 @@ _CHG-0003 moved 4 acceptance criteria, word for word, out of REQ-TRV-029, 030 an
 _The delivered screens are not a product a travel business can run. Must that be agreed, sliced and built, and does it include maps, booking or a Travel Consultant?_
 
 **From the developer** (Kartik Chandra Biswas), session 2026-09-26: yes — workspace quality is in scope as REQ-TRV-106 to 111, slice 17, absorbed for the demo. Maps, weather, flights, hotels, booking and Travel Consultant stay out (REQ-TRV-079, 082–090).
+
+## CHG-0005: is a tour-desk job (generate, chat, print) in scope?
+
+_Chat looks dead, the Trip page does not say what to do next, and the product is not a desk a tour company can run. Must that be agreed and sliced, and does it add booking or a Consultant?_
+
+**From the developer** (Kartik Chandra Biswas), session 2026-09-26: yes — desk flow is in scope as REQ-TRV-112 to 116, slice 18, absorbed for the demo. Chat stays the existing feature (REQ-TRV-035), moved and explained. A live Anthropic key is operations, not a new requirement. Maps, booking and Travel Consultant stay out.
+
+## CHG-0006: is a four-step desk plus local Ollama in scope?
+
+_The last recovery was not followable. Must the Trip become four named steps, and must live Chat use Ollama instead of a cloud key?_
+
+**From the developer** (Kartik Chandra Biswas), session 2026-09-26: yes — REQ-TRV-117 (Ollama for Plan and Chat) and REQ-TRV-118 (Trip, Itinerary, Adjust, Hand over) on slice 18, absorbed. Installing Ollama and pulling a model is operations. Maps, booking and Travel Consultant stay out.
+
+## CHG-0007: is a desk list on Your Trips in scope?
+
+_Your Trips is a stacked search form. Must the list be the page, with tests that the application follows?_
+
+**From the developer** (Kartik Chandra Biswas), session 2026-09-26: yes — REQ-TRV-119 (desk list + Filters group) and REQ-TRV-120 (each row names Generate Plan or Adjust) on slice 18, absorbed. Search labels stay. Maps, booking and Travel Consultant stay out. The tests are the plan.

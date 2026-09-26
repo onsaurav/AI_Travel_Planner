@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { TripView } from '../../shared/trip-schemas';
+import { deskListNext } from '../pages/desk-list-next';
 import { travelersLabel } from '../pages/trip-labels';
 import { StatusBadge } from './StatusBadge';
 
@@ -17,6 +18,7 @@ export function TripTable({ trips }: { readonly trips: readonly TripView[] }) {
               Budget
             </th>
             <th scope="col">Status</th>
+            <th scope="col">Next</th>
           </tr>
         </thead>
         <tbody>
@@ -32,6 +34,7 @@ export function TripTable({ trips }: { readonly trips: readonly TripView[] }) {
               <td>
                 <StatusBadge label={trip.status} />
               </td>
+              <td className="cell-nowrap">{deskListNext(trip.status)}</td>
             </tr>
           ))}
         </tbody>

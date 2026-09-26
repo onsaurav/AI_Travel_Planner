@@ -11,7 +11,14 @@ import { useChat } from './use-chat';
  * `planVersion` is the Plan on show, so a suggestion made for an older one is shown as out of date. `onBusyChange`
  * tells the Plan section when the chat is working, so the two never change the Plan at once.
  */
-export function ChatBox({ tripId, planVersion, currency, isBusy, onBusyChange, onPlanChanged }: {
+export function ChatBox({
+  tripId,
+  planVersion,
+  currency,
+  isBusy,
+  onBusyChange,
+  onPlanChanged,
+}: {
   readonly tripId: string;
   readonly planVersion: number;
   readonly currency: Currency;
@@ -30,19 +37,24 @@ export function ChatBox({ tripId, planVersion, currency, isBusy, onBusyChange, o
     event.preventDefault();
     void chat.send().then(() => messageBox.current?.focus());
   };
-  const decide = (decision: () => Promise<void>) => () => void decision().then(() => heading.current?.focus());
+  const decide = (decision: () => Promise<void>) => () =>
+    void decision().then(() => heading.current?.focus());
 
   return (
-    <section aria-labelledby="chat-heading">
+    <section className="chat-desk" aria-labelledby="chat-heading">
       <h2 id="chat-heading" ref={heading} tabIndex={-1}>
         Chat
       </h2>
+      <p className="chat-help">
+        Ask a question or request a change. A change is previewed before it is saved.
+      </p>
       {chat.isLoading ? <p>Loading the chat…</p> : null}
       {chat.messages.length > 0 ? (
         <ul aria-label="Chat messages">
           {chat.messages.map((message) => (
             <li key={message.id}>
-              <strong>{roleLabel(message.role)}</strong> <span className="chat-text">{message.text}</span>
+              <strong>{roleLabel(message.role)}</strong>{' '}
+              <span className="chat-text">{message.text}</span>
               {message.proposal ? (
                 <ChatProposal
                   proposal={message.proposal}
@@ -60,11 +72,13 @@ export function ChatBox({ tripId, planVersion, currency, isBusy, onBusyChange, o
       {chat.arriving ? (
         <ul aria-label="Reply arriving">
           <li>
-            <strong>{roleLabel('traveler')}</strong> <span className="chat-text">{chat.arriving.question}</span>
+            <strong>{roleLabel('traveler')}</strong>{' '}
+            <span className="chat-text">{chat.arriving.question}</span>
           </li>
           {chat.arriving.reply !== '' ? (
             <li>
-              <strong>{roleLabel('assistant')}</strong> <span className="chat-text">{chat.arriving.reply}</span>
+              <strong>{roleLabel('assistant')}</strong>{' '}
+              <span className="chat-text">{chat.arriving.reply}</span>
             </li>
           ) : null}
         </ul>

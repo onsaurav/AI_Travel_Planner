@@ -3239,3 +3239,237 @@
   depends_on: [REQ-TRV-016, REQ-TRV-068]
   ambiguities: []
   belts: [A, B, C]
+
+# ---------------------------------------------------------------------------
+# Tour desk — CHG-0005 (2026-09-26)
+# A tour company runs jobs: Draft → generate Plan → Chat to adjust → print/share.
+# Chat already exists (REQ-TRV-035). This makes the job visible. Not booking.
+# ---------------------------------------------------------------------------
+- id: REQ-TRV-112
+  title: A Trip page names the next desk job
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/tour-desk.spec.ts
+    - tests/unit/desk-job.test.ts
+  version: 1
+  source: CHG-0005; BRD v1.0 §3 (simple travel-planning experience)
+  rationale: >-
+    A tour desk cannot guess. Draft means generate a Plan. Planned means
+    adjust or hand the itinerary to the Traveler.
+  acceptance:
+    - given: A confirmed Traveler viewing a Draft Trip
+      when: The Trip page is shown
+      then: The page says the next job is to generate a day-by-day Plan
+    - given: A confirmed Traveler viewing a Planned Trip
+      when: The Trip page is shown
+      then: The page says the next job is to adjust the itinerary or print it
+  depends_on: [REQ-TRV-016, REQ-TRV-017]
+  ambiguities: []
+  belts: [A, B]
+
+- id: REQ-TRV-113
+  title: Chat sits with the itinerary on a Planned Trip
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/tour-desk.spec.ts
+    - tests/unit/tour-desk.test.ts
+  version: 1
+  source: CHG-0005; REQ-TRV-035
+  rationale: >-
+    Chat at the bottom, after share and feedback, is invisible. A desk
+    that cannot find it reports it as broken.
+  acceptance:
+    - given: A Traveler viewing a Trip that has a saved Plan
+      when: The Trip page is shown
+      then: A region named Chat is visible without opening share or feedback
+  depends_on: [REQ-TRV-035]
+  ambiguities: []
+  belts: [A, B]
+
+- id: REQ-TRV-114
+  title: An empty Chat says what a desk can ask
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/tour-desk.spec.ts
+    - tests/unit/tour-desk.test.ts
+  version: 1
+  source: CHG-0005; REQ-TRV-035
+  rationale: >-
+    A box labelled Message is not a tool. The desk must see that Chat
+    answers questions about this Trip and previews Plan changes.
+  acceptance:
+    - given: A Traveler viewing a Trip that has a saved Plan and no chat messages
+      when: The Chat region is shown
+      then: >-
+        The region says they can ask a question or request a change, and
+        that a change is previewed before it is saved
+  depends_on: [REQ-TRV-035]
+  ambiguities: []
+  belts: [A, B]
+
+- id: REQ-TRV-115
+  title: A Draft Trip offers Generate Plan as the primary action
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/tour-desk.spec.ts
+    - tests/unit/tour-desk.test.ts
+  version: 1
+  source: CHG-0005; REQ-TRV-026
+  rationale: >-
+    Until there is a Plan there is no itinerary to chat about. The one
+    action must be obvious.
+  acceptance:
+    - given: A Traveler viewing a Draft Trip with no saved Plan
+      when: The Trip page is shown
+      then: A control named Generate Plan is visible and no Chat region is shown
+  depends_on: [REQ-TRV-026]
+  ambiguities: []
+  belts: [A, B]
+
+- id: REQ-TRV-116
+  title: A Planned Trip offers Chat and Print itinerary together
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/tour-desk.spec.ts
+    - tests/unit/tour-desk.test.ts
+  version: 1
+  source: CHG-0005; REQ-TRV-035; REQ-TRV-110
+  rationale: >-
+    After a Plan exists, the desk either changes it or hands it over.
+    Those two actions must sit with the itinerary, not below a stack of
+    other panels.
+  acceptance:
+    - given: A Traveler viewing a Trip that has a saved Plan
+      when: The Trip page is shown
+      then: A control named Print itinerary and a region named Chat are both visible
+  depends_on: [REQ-TRV-035, REQ-TRV-110]
+  ambiguities: []
+  belts: [A, B]
+
+# ---------------------------------------------------------------------------
+# Followable desk + Ollama — CHG-0006 (2026-09-26)
+# The desk is four named steps. Live Chat and Plan generation use local Ollama.
+# Not booking, maps, weather, or Anthropic-as-the-only-provider.
+# ---------------------------------------------------------------------------
+- id: REQ-TRV-117
+  title: Live Chat and Plan generation talk to a local Ollama server
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/ollama-desk.spec.ts
+    - tests/unit/config.test.ts
+    - tests/unit/ollama-ai-service.test.ts
+  version: 1
+  source: CHG-0006; REQ-TRV-026; REQ-TRV-035
+  rationale: >-
+    Chat that only works with a cloud key is dead on a local desk. Ollama
+    is the live provider for this machine: no API key, same Chat and
+    Generate Plan controls.
+  acceptance:
+    - given: The application is started with AI_PROVIDER=ollama, AI_MODEL and OLLAMA_BASE_URL set
+      when: A Traveler generates a Plan or sends a Chat message
+      then: The server posts to that Ollama address and needs no API key
+    - given: Ollama answers with a stream of text pieces
+      when: The Chat or Plan request is in progress
+      then: Each piece is shown as it arrives
+    - given: Ollama is down or answers with an error
+      when: A Traveler asks for a Plan or a Chat reply
+      then: They see that the AI is unavailable, and the request text is not shown
+  depends_on: [REQ-TRV-026, REQ-TRV-035]
+  ambiguities: []
+  belts: [A, B]
+
+- id: REQ-TRV-118
+  title: A Trip page shows four named desk steps
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/tour-desk.spec.ts
+    - tests/unit/desk-steps.test.ts
+  version: 1
+  source: CHG-0006; REQ-TRV-112
+  rationale: >-
+    A next-job sentence is not a job. The desk must see Trip, Itinerary,
+    Adjust and Hand over, and which of those is current.
+  acceptance:
+    - given: A Traveler viewing a Trip
+      when: The Trip page is shown
+      then: A list named Desk job shows the steps Trip, Itinerary, Adjust and Hand over
+    - given: A Traveler viewing a Draft Trip
+      when: The Desk job list is shown
+      then: Itinerary is the current step
+    - given: A Traveler viewing a Planned Trip
+      when: The Desk job list is shown
+      then: Adjust is the current step
+  depends_on: [REQ-TRV-112]
+  ambiguities: []
+  belts: [A, B]
+
+# ---------------------------------------------------------------------------
+# Desk list — CHG-0007 (2026-09-26)
+# Your Trips is the desk inbox. Search stays. The table is the page.
+# Tests with @covers are the plan the application follows.
+# ---------------------------------------------------------------------------
+- id: REQ-TRV-119
+  title: Your Trips is a desk list, not a search form
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/desk-list.spec.ts
+    - tests/unit/desk-list.test.ts
+  version: 1
+  source: CHG-0007; REQ-TRV-106; REQ-TRV-076; REQ-TRV-077
+  rationale: >-
+    A stacked filter form with the Trip under it is not a workspace.
+    The desk opens the list. Search stays, as a toolbar.
+  acceptance:
+    - given: A confirmed Traveler with at least one Trip
+      when: They open Your Trips
+      then: A table of those Trips is shown, and a control named New Trip is visible
+    - given: A confirmed Traveler with at least one Trip
+      when: They open Your Trips
+      then: >-
+        A search named Search and filter Trips is shown, with a field
+        named Search Trips and a group named Filters that contains
+        Country, Destination, Travel style, Currency, Minimum budget,
+        Maximum budget, Minimum Days and Maximum Days
+  depends_on: [REQ-TRV-106, REQ-TRV-076, REQ-TRV-077]
+  ambiguities: []
+  belts: [A, B]
+
+- id: REQ-TRV-120
+  title: Each listed Trip names the next desk job
+  module: TRV
+  priority: must
+  status: verified
+  verified_by:
+    - e2e/desk-list.spec.ts
+    - tests/unit/desk-list.test.ts
+  version: 1
+  source: CHG-0007; REQ-TRV-112; REQ-TRV-118
+  rationale: >-
+    A status badge is not a job. The list must say Generate Plan on a
+    Draft Trip and Adjust on a Planned Trip.
+  acceptance:
+    - given: A confirmed Traveler with a Draft Trip
+      when: They open Your Trips
+      then: That Trip's row names Generate Plan
+    - given: A confirmed Traveler with a Planned Trip
+      when: They open Your Trips
+      then: That Trip's row names Adjust
+  depends_on: [REQ-TRV-112, REQ-TRV-118]
+  ambiguities: []
+  belts: [A, B]

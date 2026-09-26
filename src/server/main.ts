@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { buildApp } from './app';
 import { createAnthropicAiService } from './ai/anthropic-ai-service';
 import type { AiService } from './ai/ai-service';
+import { createOllamaAiService } from './ai/ollama-ai-service';
 import { createScriptedAiService } from './ai/scripted-ai-service';
 import { systemClock } from './clock';
 import { loadConfig, type AppConfig } from './config';
@@ -28,7 +29,21 @@ function aiServiceFor(config: AppConfig): AiService {
   if (config.AI_PROVIDER === 'scripted') {
     return createScriptedAiService(config.AI_SCRIPT_FILE ?? '');
   }
-  return createAnthropicAiService({ apiKey: config.AI_API_KEY ?? '', model: config.AI_MODEL ?? '' });
+  if (config.AI_PROVIDER === 'ollama') {
+    if (!config.OLLAMA_BASE_URL || !config.AI_MODEL) {
+      throw new Error(
+        'Invalid configuration: OLLAMA_BASE_URL and AI_MODEL are required when AI_PROVIDER=ollama',
+      );
+    }
+    return createOllamaAiService({
+      baseUrl: config.OLLAMA_BASE_URL,
+      model: config.AI_MODEL,
+    });
+  }
+  return createAnthropicAiService({
+    apiKey: config.AI_API_KEY ?? '',
+    model: config.AI_MODEL ?? '',
+  });
 }
 
 const config = loadConfig(process.env);

@@ -9,15 +9,16 @@ The client's brief is in `.brain/requirements/BRIEF.md`. The requirements are in
 
 ## What works today
 
-- **Accounts.** Travelers can register, confirm their email address, log in and
-  out, reset a password and edit their profile preferences.
-- **Admin and Destinations.** Administrators manage users and the Destination
-  list. Travelers can search Destinations.
-- **Trips.** Travelers create, list, edit and delete their own Trips.
-- **AI Plan generation.** In progress on `feat/trv-plan-generation`: a Traveler can ask the AI for a day-by-day Plan, labelled as a recommendation, with a fallback message when the AI fails.
+A tour desk runs one job per Trip, in this order:
 
-Saved plans, chat, email and feedback come in later slices.
-For current status, open `.claude/reports/dashboard.html` or run `/dashboard`.
+1. **Trip** — create the Trip (name, Destination, dates).
+2. **Itinerary** — press **Generate Plan**. The AI writes a day-by-day itinerary.
+3. **Adjust** — **Chat** sits beside the itinerary. Ask a question or request a change. A change is previewed before it is saved.
+4. **Hand over** — **Print itinerary** or share it.
+
+Admin sees Draft vs Planned counts. Maps, weather, flights, hotels and booking are out of scope.
+
+Live Chat and Plan generation use **Ollama** on this machine (`AI_PROVIDER=ollama`). For current status, open `.claude/reports/dashboard.html` or run `/dashboard`.
 
 ## Stack
 
@@ -42,6 +43,24 @@ cp .env.example .env      # then fill in EMAIL_FROM and your email settings
 
 The server doesn't load `.env` on its own. Pass it with `--env-file`, or set the
 variables in your shell.
+
+### Ollama (live Chat and Generate Plan)
+
+Chat and Plan generation talk to a local Ollama server. No cloud key.
+
+```sh
+# 1. Install Ollama from https://ollama.com and leave it running
+# 2. Pull a model (once)
+ollama pull llama3.2
+
+# 3. .env already has:
+#    AI_PROVIDER=ollama
+#    OLLAMA_BASE_URL=http://127.0.0.1:11434
+#    AI_MODEL=llama3.2
+```
+
+Then restart the server. On a Trip: **Generate Plan**, then **Chat**. If Ollama
+is not running, both show the existing unavailable message.
 
 ### Email locally
 
@@ -97,9 +116,10 @@ refuses to start and names the problem, without printing the value.
 | `EMAIL_OUTBOX_DIR` | when `file` | | |
 | `COOKIE_SECURE` | no | `true` | Set to `false` only for local HTTP |
 | `AUTH_RATE_LIMIT_PER_MINUTE` | no | `20` | |
-| `AI_PROVIDER` | yes | | `anthropic`, or `scripted` for the browser tests (only starts when `NODE_ENV=test`) |
+| `AI_PROVIDER` | yes | | `ollama` (local), `anthropic` (cloud), or `scripted` for browser tests (`NODE_ENV=test` only) |
+| `OLLAMA_BASE_URL` | when `ollama` | | Usually `http://127.0.0.1:11434` |
 | `AI_API_KEY` | when `anthropic` | | Held server-side only |
-| `AI_MODEL` | when `anthropic` | | The model id your account uses |
+| `AI_MODEL` | when `ollama` or `anthropic` | | Ollama tag such as `llama3.2`, or the Anthropic model id |
 | `AI_INPUT_COST_MICRO_USD_PER_MTOK`, `AI_OUTPUT_COST_MICRO_USD_PER_MTOK` | when `anthropic` | | Millionths of a US dollar per million tokens, so cost can be recorded |
 | `AI_SCRIPT_FILE` | when `scripted` | | JSON file the browser tests write to say what the next AI request does |
 | `AI_TIMEOUT_MS` | no | `120000` | A Plan not back by then shows the fallback message |

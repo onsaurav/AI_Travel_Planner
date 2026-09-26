@@ -114,7 +114,7 @@ export async function aTripChoosing(
   choices: ChoicesToMake,
 ): Promise<string> {
   const tripName = await createTripChoosing(page, destinationName, choices);
-  await expect(page.getByRole('article', { name: tripName })).toBeVisible();
+  await expect(page.getByRole('row', { name: new RegExp(tripName) })).toBeVisible();
   await openTrip(page, tripName);
   return tripName;
 }

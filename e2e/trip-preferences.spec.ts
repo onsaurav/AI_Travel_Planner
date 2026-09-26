@@ -82,7 +82,7 @@ test.describe('the travel style choice', () => {
 
     await expect(page.getByRole('alert')).toHaveText('Check the travel style.');
     await page.goto('/trips');
-    await expect(page.getByRole('article', { name: tripName })).toHaveCount(0);
+    await expect(page.getByRole('row', { name: new RegExp(tripName) })).toHaveCount(0);
   });
 });
 

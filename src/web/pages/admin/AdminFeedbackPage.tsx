@@ -2,8 +2,17 @@ import { useEffect, useState, type FormEvent } from 'react';
 import type { AdminFeedbackView } from '../../../shared/feedback-schemas';
 import { api } from '../../api-client';
 import { FormField } from '../../components/FormField';
+import { PageHeader } from '../../components/PageHeader';
+import { SearchPanel } from '../../components/SearchPanel';
+import { searchSummary } from '../../components/search-summary';
 import { FeedbackAnalysisPanel } from './FeedbackAnalysisPanel';
-import { csvUrlFor, EMPTY_FEEDBACK_FORM, feedbackQuery, type FeedbackFilterForm } from './admin-view-state';
+import {
+  csvUrlFor,
+  EMPTY_FEEDBACK_FORM,
+  feedbackFilterCount,
+  feedbackQuery,
+  type FeedbackFilterForm,
+} from './admin-view-state';
 
 type State =
   | { readonly state: 'loading' }
@@ -33,12 +42,18 @@ export function AdminFeedbackPage() {
   useEffect(() => {
     let isCurrent = true;
     setShown({ state: 'loading' });
-    void api<{ feedback: AdminFeedbackView[] }>('GET', `/api/admin/feedback${feedbackQuery(applied)}`).then((result) => {
+    void api<{ feedback: AdminFeedbackView[] }>(
+      'GET',
+      `/api/admin/feedback${feedbackQuery(applied)}`,
+    ).then((result) => {
       if (!isCurrent) return;
       setShown(
         result.ok
           ? { state: 'loaded', feedback: result.data.feedback }
-          : { state: 'failed', message: result.error.message ?? 'The feedback could not be loaded.' },
+          : {
+              state: 'failed',
+              message: result.error.message ?? 'The feedback could not be loaded.',
+            },
       );
     });
     return () => {
@@ -46,7 +61,8 @@ export function AdminFeedbackPage() {
     };
   }, [applied]);
 
-  const change = (field: keyof FeedbackFilterForm) => (value: string) => setForm((current) => ({ ...current, [field]: value }));
+  const change = (field: keyof FeedbackFilterForm) => (value: string) =>
+    setForm((current) => ({ ...current, [field]: value }));
   const chooseSort = (value: string) => {
     const choice = SORTS.find((candidate) => candidate.value === value) ?? SORTS[0];
     setForm((current) => ({ ...current, sort: choice.sort, order: choice.order }));
@@ -59,54 +75,89 @@ export function AdminFeedbackPage() {
     setForm(EMPTY_FEEDBACK_FORM);
     setApplied(EMPTY_FEEDBACK_FORM);
   };
-  const sortValue = SORTS.find((choice) => choice.sort === form.sort && choice.order === form.order)?.value ?? '';
+  const sortValue =
+    SORTS.find((choice) => choice.sort === form.sort && choice.order === form.order)?.value ?? '';
 
   return (
     <>
-      <h1>Feedback</h1>
-      <form onSubmit={apply} role="search" aria-label="Filter feedback" noValidate>
-        <FormField label="Keyword in the comment" value={form.keyword} onChange={change('keyword')} />
-        <div className="field">
-          <label htmlFor="feedback-rating">Rating</label>
-          <select id="feedback-rating" value={form.rating} onChange={(event) => change('rating')(event.target.value)}>
-            <option value="">Any</option>
-            {[1, 2, 3, 4, 5].map((rating) => (
-              <option key={rating} value={rating}>
-                {rating}
-              </option>
-            ))}
-          </select>
+      <PageHeader eyebrow="Admin" title="Feedback" lead="What Travelers said about their Plans." />
+      <SearchPanel
+        label="Filter feedback"
+        title="Narrow the list"
+        summary={searchSummary(applied.keyword, feedbackFilterCount(applied))}
+        onSubmit={apply}
+        actions={
+          <>
+            <button type="submit">Show feedback</button>
+            <button type="button" onClick={clear}>
+              Clear filters
+            </button>
+          </>
+        }
+      >
+        <div className="search-panel-query">
+          <FormField
+            label="Keyword in the comment"
+            value={form.keyword}
+            onChange={change('keyword')}
+          />
         </div>
-        <FormField label="Destination" value={form.destination} onChange={change('destination')} />
-        <FormField label="From" type="date" value={form.from} onChange={change('from')} />
-        <FormField label="To" type="date" value={form.to} onChange={change('to')} />
-        <div className="field">
-          <label htmlFor="feedback-sort">Sort</label>
-          <select id="feedback-sort" value={sortValue} onChange={(event) => chooseSort(event.target.value)}>
-            {SORTS.map((choice) => (
-              <option key={choice.value} value={choice.value}>
-                {choice.label}
-              </option>
-            ))}
-          </select>
+        <div className="filter-grid">
+          <div className="field">
+            <label htmlFor="feedback-rating">Rating</label>
+            <select
+              id="feedback-rating"
+              value={form.rating}
+              onChange={(event) => change('rating')(event.target.value)}
+            >
+              <option value="">Any</option>
+              {[1, 2, 3, 4, 5].map((rating) => (
+                <option key={rating} value={rating}>
+                  {rating}
+                </option>
+              ))}
+            </select>
+          </div>
+          <FormField
+            label="Destination"
+            value={form.destination}
+            onChange={change('destination')}
+          />
+          <FormField label="From" type="date" value={form.from} onChange={change('from')} />
+          <FormField label="To" type="date" value={form.to} onChange={change('to')} />
+          <div className="field">
+            <label htmlFor="feedback-sort">Sort</label>
+            <select
+              id="feedback-sort"
+              value={sortValue}
+              onChange={(event) => chooseSort(event.target.value)}
+            >
+              {SORTS.map((choice) => (
+                <option key={choice.value} value={choice.value}>
+                  {choice.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        <button type="submit">Show feedback</button>
-        <button type="button" onClick={clear}>
-          Clear filters
-        </button>
-      </form>
+      </SearchPanel>
       {shown.state === 'failed' ? null : (
         <p>
           <a href={csvUrlFor(applied)} download="feedback.csv">
             Export CSV
           </a>{' '}
-          <span className="muted">Exports the list as last shown{form === applied ? '' : ', not the filters you have changed since'}.</span>
+          <span className="muted">
+            Exports the list as last shown
+            {form === applied ? '' : ', not the filters you have changed since'}.
+          </span>
         </p>
       )}
       <FeedbackAnalysisPanel filter={applied} />
       {shown.state === 'loading' ? <p>Loading…</p> : null}
       {shown.state === 'failed' ? <p role="alert">{shown.message}</p> : null}
-      {shown.state === 'loaded' && shown.feedback.length === 0 ? <p role="status">No feedback matches.</p> : null}
+      {shown.state === 'loaded' && shown.feedback.length === 0 ? (
+        <p role="status">No feedback matches.</p>
+      ) : null}
       {shown.state === 'loaded' && shown.feedback.length > 0 ? (
         <table>
           <caption>{`Feedback: ${shown.feedback.length} ${shown.feedback.length === 1 ? 'entry' : 'entries'}`}</caption>

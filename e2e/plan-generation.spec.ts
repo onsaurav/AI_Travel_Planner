@@ -173,7 +173,7 @@ test.describe('when the AI fails', () => {
     await setAiScript({ mode: 'hang' });
 
     await page.goto('/trips');
-    await expect(page.getByRole('article', { name: tripName })).toContainText(
+    await expect(page.getByRole('row', { name: new RegExp(tripName) })).toContainText(
       `${destinationName}, Japan`,
     );
     await page.getByRole('link', { name: tripName }).click();

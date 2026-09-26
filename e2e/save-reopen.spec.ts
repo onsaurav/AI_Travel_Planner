@@ -31,7 +31,7 @@ test.describe('saving a generated Plan', () => {
   }) => {
     const { page, tripName } = await aTripReadyToPlan(browser, 'save-plan');
     await page.goto('/trips');
-    await expect(page.getByRole('article', { name: tripName })).toContainText('Draft');
+    await expect(page.getByRole('row', { name: new RegExp(tripName) })).toContainText('Draft');
     await openTrip(page, tripName);
 
     await expect(page.getByText('Draft', { exact: true })).toBeVisible();
@@ -44,7 +44,7 @@ test.describe('saving a generated Plan', () => {
 
     await expectDaysShown(page);
     await page.goto('/trips');
-    await expect(page.getByRole('article', { name: tripName })).toContainText('Planned');
+    await expect(page.getByRole('row', { name: new RegExp(tripName) })).toContainText('Planned');
   });
 
   // @covers REQ-TRV-017@v1

@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { TripView } from '../../shared/trip-schemas';
 import { api } from '../api-client';
-import { PageHeader } from '../components/PageHeader';
+import { DeskSteps } from '../components/DeskSteps';
 import { PageHeader } from '../components/PageHeader';
 import { PlanGenerator } from '../components/PlanGenerator';
 import { PreferenceSummary } from '../components/PreferenceSummary';
 import { StatusBadge } from '../components/StatusBadge';
-import { StatusBadge } from '../components/StatusBadge';
+import { deskNextJob } from './desk-job';
 import { travelersLabel } from './trip-labels';
 
 type TripState =
@@ -35,7 +35,6 @@ export function TripPage() {
     };
   }, [path]);
 
-  /** A saved Plan makes the Trip Planned, so the page reads the Trip again rather than keep saying Draft. */
   const reloadTrip = () => {
     void api<TripView>('GET', path).then((result) => {
       if (result.ok) setTrip({ state: 'loaded', trip: result.data });
@@ -66,13 +65,19 @@ export function TripPage() {
               Edit
             </Link>
             {isConfirmingDelete ? null : (
-              <button type="button" className="btn-danger-quiet" onClick={() => setIsConfirmingDelete(true)}>
+              <button
+                type="button"
+                className="btn-danger-quiet"
+                onClick={() => setIsConfirmingDelete(true)}
+              >
                 Delete Trip
               </button>
             )}
           </>
         }
       />
+      <DeskSteps status={shown.status} />
+      <p className="desk-next">{deskNextJob(shown.status)}</p>
       {isConfirmingDelete ? (
         <div role="group" aria-label="Confirm delete" className="confirm-box danger">
           <p>Delete this Trip?</p>

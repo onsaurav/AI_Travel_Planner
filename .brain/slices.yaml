@@ -129,3 +129,9 @@
   branch: feat/trv-business-product
   why: "The application is a workspace a travel business can run — Traveler home, itinerary, print, admin console and pipeline counts — without maps, weather or booking"
   covers: [REQ-TRV-106, REQ-TRV-107, REQ-TRV-108, REQ-TRV-109, REQ-TRV-110, REQ-TRV-111]
+
+- id: 18
+  name: Tour desk
+  branch: feat/trv-tour-desk
+  why: "A tour desk follows four named steps on a Trip; Your Trips is the desk list with the next job on each row; Chat sits beside the itinerary; live Chat talks to local Ollama"
+  covers: [REQ-TRV-112, REQ-TRV-113, REQ-TRV-114, REQ-TRV-115, REQ-TRV-116, REQ-TRV-117, REQ-TRV-118, REQ-TRV-119, REQ-TRV-120]

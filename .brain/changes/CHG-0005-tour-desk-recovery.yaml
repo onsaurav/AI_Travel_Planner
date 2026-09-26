@@ -1,0 +1,37 @@
+id: CHG-0005
+raised: 2026-09-26
+stream: variation
+source: "Developer (Kartik Chandra Biswas), session 2026-09-26: AI chat not working, ugly design, business flow not clear; recover for a tour-managing company"
+raw: >-
+  AI chat not working, ugly design, business flow not clear, what is it
+  what to do nothing. Create a whole plan to recover this and make it
+  good for a tour managing company.
+context: >-
+  CHG-0004 / slice 17 made workspace chrome (trip list, print, admin
+  counts). The Trip itself is still a pile of controls. Chat (REQ-TRV-035)
+  is implemented and tested with a scripted AI, but on a live desk it is
+  easy to miss and easy to run without a provider key. This change adds
+  five requirements and slice 18 so a tour desk can see the job, the next
+  action, and Chat beside the itinerary. Not in this change: maps, weather,
+  flights, hotels, booking, Travel Consultant (REQ-TRV-079, 082-090).
+  Setting AI_API_KEY is operations, not a new REQ.
+affects: [REQ-TRV-035]
+creates: [REQ-TRV-112, REQ-TRV-113, REQ-TRV-114, REQ-TRV-115, REQ-TRV-116]
+analysis:
+  dependants: [REQ-TRV-035]
+  tests_invalidated: 0
+  estimate: >-
+    One slice after 17. Trip page next-action copy, Chat moved up and
+    explained, Draft primary action. No API change. Existing chat e2e
+    keep the region named Chat and the Send control.
+decision: absorb
+commercial: >-
+  Absorbed for the demo: the brief already sold a day-by-day Plan and
+  chat. This makes that a desk job. Charge if they later want booking,
+  maps, or a Consultant role.
+outcome:
+  - REQ-TRV-112: v1 agreed, slice 18
+  - REQ-TRV-113: v1 agreed, slice 18
+  - REQ-TRV-114: v1 agreed, slice 18
+  - REQ-TRV-115: v1 agreed, slice 18
+  - REQ-TRV-116: v1 agreed, slice 18

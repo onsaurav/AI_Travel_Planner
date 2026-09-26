@@ -25,8 +25,16 @@ const configSchema = z
     /** In development mail may only go to a test inbox, never to a transactional service (REQ-TRV-054). */
     APP_ENV: z.enum(['development', 'production']),
     /** The timezone Trip reminders are timed in: 09:00 here, three days before a Trip starts (REQ-TRV-057). */
-    APP_TIMEZONE: z.string().min(1).refine(isTimezone, 'must be an IANA timezone such as Australia/Sydney'),
-    REMINDER_CHECK_INTERVAL_MS: z.coerce.number().int().positive().max(MAX_TIMER_MS).default(900_000),
+    APP_TIMEZONE: z
+      .string()
+      .min(1)
+      .refine(isTimezone, 'must be an IANA timezone such as Australia/Sydney'),
+    REMINDER_CHECK_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .max(MAX_TIMER_MS)
+      .default(900_000),
     /** How often Trips deleted 30 days ago are removed for good, taking their Plans and chat with them but not their feedback. */
     TRIP_PURGE_INTERVAL_MS: z.coerce.number().int().positive().max(MAX_TIMER_MS).default(3_600_000),
     DATABASE_PATH: z.string().min(1),
@@ -40,9 +48,10 @@ const configSchema = z
     COOKIE_SECURE: booleanFromString.default(true),
     AUTH_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(20),
     NODE_ENV: z.string().optional(),
-    AI_PROVIDER: z.enum(['anthropic', 'scripted']),
+    AI_PROVIDER: z.enum(['anthropic', 'scripted', 'ollama']),
     AI_API_KEY: z.string().min(1).optional(),
     AI_MODEL: z.string().min(1).optional(),
+    OLLAMA_BASE_URL: z.url().optional(),
     AI_SCRIPT_FILE: z.string().min(1).optional(),
     AI_TIMEOUT_MS: z.coerce.number().int().positive().default(120_000),
     AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(16_000),
@@ -52,30 +61,84 @@ const configSchema = z
   })
   .superRefine((value, ctx) => {
     if (value.EMAIL_TRANSPORT === 'smtp' && !value.SMTP_HOST) {
-      ctx.addIssue({ code: 'custom', path: ['SMTP_HOST'], message: 'required when EMAIL_TRANSPORT=smtp' });
+      ctx.addIssue({
+        code: 'custom',
+        path: ['SMTP_HOST'],
+        message: 'required when EMAIL_TRANSPORT=smtp',
+      });
     }
-    if (value.APP_ENV === 'development' && value.EMAIL_TRANSPORT === 'smtp' && value.SMTP_HOST && !LOCAL_MAIL_HOSTS.includes(value.SMTP_HOST.toLowerCase())) {
-      ctx.addIssue({ code: 'custom', path: ['SMTP_HOST'], message: 'in development, mail may only go to a test inbox on 127.0.0.1 or localhost' });
+    if (
+      value.APP_ENV === 'development' &&
+      value.EMAIL_TRANSPORT === 'smtp' &&
+      value.SMTP_HOST &&
+      !LOCAL_MAIL_HOSTS.includes(value.SMTP_HOST.toLowerCase())
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['SMTP_HOST'],
+        message: 'in development, mail may only go to a test inbox on 127.0.0.1 or localhost',
+      });
     }
     if (value.APP_ENV === 'production' && !value.APP_BASE_URL.startsWith('https://')) {
-      ctx.addIssue({ code: 'custom', path: ['APP_BASE_URL'], message: 'must be an https address in production, because emailed links use it' });
+      ctx.addIssue({
+        code: 'custom',
+        path: ['APP_BASE_URL'],
+        message: 'must be an https address in production, because emailed links use it',
+      });
     }
     if (value.EMAIL_TRANSPORT === 'file' && !value.EMAIL_OUTBOX_DIR) {
-      ctx.addIssue({ code: 'custom', path: ['EMAIL_OUTBOX_DIR'], message: 'required when EMAIL_TRANSPORT=file' });
+      ctx.addIssue({
+        code: 'custom',
+        path: ['EMAIL_OUTBOX_DIR'],
+        message: 'required when EMAIL_TRANSPORT=file',
+      });
     }
     if (value.AI_PROVIDER === 'anthropic') {
-      for (const name of ['AI_API_KEY', 'AI_MODEL', 'AI_INPUT_COST_MICRO_USD_PER_MTOK', 'AI_OUTPUT_COST_MICRO_USD_PER_MTOK'] as const) {
+      for (const name of [
+        'AI_API_KEY',
+        'AI_MODEL',
+        'AI_INPUT_COST_MICRO_USD_PER_MTOK',
+        'AI_OUTPUT_COST_MICRO_USD_PER_MTOK',
+      ] as const) {
         if (value[name] === undefined) {
-          ctx.addIssue({ code: 'custom', path: [name], message: 'required when AI_PROVIDER=anthropic' });
+          ctx.addIssue({
+            code: 'custom',
+            path: [name],
+            message: 'required when AI_PROVIDER=anthropic',
+          });
         }
       }
     }
     if (value.AI_PROVIDER === 'scripted') {
       if (!value.AI_SCRIPT_FILE) {
-        ctx.addIssue({ code: 'custom', path: ['AI_SCRIPT_FILE'], message: 'required when AI_PROVIDER=scripted' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['AI_SCRIPT_FILE'],
+          message: 'required when AI_PROVIDER=scripted',
+        });
       }
       if (value.NODE_ENV !== 'test') {
-        ctx.addIssue({ code: 'custom', path: ['AI_PROVIDER'], message: 'scripted is for tests and needs NODE_ENV=test' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['AI_PROVIDER'],
+          message: 'scripted is for tests and needs NODE_ENV=test',
+        });
+      }
+    }
+    if (value.AI_PROVIDER === 'ollama') {
+      if (!value.AI_MODEL) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['AI_MODEL'],
+          message: 'required when AI_PROVIDER=ollama',
+        });
+      }
+      if (!value.OLLAMA_BASE_URL) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['OLLAMA_BASE_URL'],
+          message: 'required when AI_PROVIDER=ollama',
+        });
       }
     }
   });
@@ -89,7 +152,9 @@ export type AppConfig = z.infer<typeof configSchema>;
 export function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
   const result = configSchema.safeParse(env);
   if (!result.success) {
-    const problems = result.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`);
+    const problems = result.error.issues.map(
+      (issue) => `${issue.path.join('.')}: ${issue.message}`,
+    );
     throw new Error(`Invalid configuration: ${problems.join('; ')}`);
   }
   return result.data;

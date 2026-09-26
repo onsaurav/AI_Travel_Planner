@@ -17,11 +17,25 @@ import { usePlanPanel } from './use-plan-panel';
  * the saved Plan on show. When the AI fails the Traveler sees the fallback message and can still change the
  * Plan by hand. `onPlanSaved` runs after a Plan is saved, so the page can show the Trip as Planned.
  */
-export function PlanGenerator({ trip, onPlanSaved }: { readonly trip: TripView; readonly onPlanSaved: () => void }) {
-  const { panel, busy, versions, loadFailure, pending, regeneratePlan, restore, cancelPending, showPlan, actions } = usePlanPanel(
-    trip.id,
-    onPlanSaved,
-  );
+export function PlanGenerator({
+  trip,
+  onPlanSaved,
+}: {
+  readonly trip: TripView;
+  readonly onPlanSaved: () => void;
+}) {
+  const {
+    panel,
+    busy,
+    versions,
+    loadFailure,
+    pending,
+    regeneratePlan,
+    restore,
+    cancelPending,
+    showPlan,
+    actions,
+  } = usePlanPanel(trip.id, onPlanSaved);
   const [isChatBusy, setIsChatBusy] = useState(false);
   const elapsedMs = useElapsedMs(busy !== null);
   const banner = panel.plan ? planBanner(panel.plan, trip) : null;
@@ -30,27 +44,66 @@ export function PlanGenerator({ trip, onPlanSaved }: { readonly trip: TripView; 
 
   return (
     <>
-      <button type="button" disabled={planActions.isBusy} onClick={regeneratePlan}>
-        {planButtonLabel(panel.plan !== null)}
-      </button>
+      <div className={panel.plan ? 'plan-actions' : 'desk-action'}>
+        <button
+          type="button"
+          className={panel.plan ? undefined : 'btn-primary'}
+          disabled={planActions.isBusy}
+          onClick={regeneratePlan}
+        >
+          {planButtonLabel(panel.plan !== null)}
+        </button>
+      </div>
       {busy ? <p role="status">{busyText(busy, elapsedMs)}</p> : null}
       {busy && isSlowRequest(busy) ? <progress aria-label="Progress of the AI request" /> : null}
       {panel.notice ? <p role="alert">{panel.notice.message}</p> : null}
       {loadFailure ? <p role="alert">{loadFailure}</p> : null}
-      {pending ? <ConfirmRegeneration message={pending.message} isBusy={planActions.isBusy} onConfirm={() => void pending.run()} onCancel={cancelPending} /> : null}
+      {pending ? (
+        <ConfirmRegeneration
+          message={pending.message}
+          isBusy={planActions.isBusy}
+          onConfirm={() => void pending.run()}
+          onCancel={cancelPending}
+        />
+      ) : null}
       {banner ? (
         <p role="note" className="plan-notice">
           {banner}
         </p>
       ) : null}
-      {panel.plan ? <PlanDisplay plan={panel.plan} actions={planActions} /> : null}
-      {panel.plan ? <BudgetPanel tripId={trip.id} planVersion={panel.plan.version} /> : null}
-      {panel.plan ? <SharePanel tripId={trip.id} isBusy={planActions.isBusy} /> : null}
-      {panel.plan ? <FeedbackPanel key={trip.id} tripId={trip.id} /> : null}
-      {panel.plan && versions.length > 0 ? (
-        <PlanVersions versions={versions} currentVersion={panel.plan.version} isBusy={planActions.isBusy} onRestore={restore} />
+      <div className={panel.plan ? 'desk-board' : undefined}>
+        <div className="desk-col">
+          {panel.plan ? <PlanDisplay plan={panel.plan} actions={planActions} /> : null}
+        </div>
+        {panel.plan ? (
+          <div className="desk-col">
+            <ChatBox
+              tripId={trip.id}
+              planVersion={panel.plan.version}
+              currency={panel.plan.currency}
+              isBusy={actions.isBusy}
+              onBusyChange={setIsChatBusy}
+              onPlanChanged={showPlan}
+            />
+          </div>
+        ) : null}
+      </div>
+      {panel.plan ? (
+        <section className="desk-handover" aria-labelledby="handover-heading">
+          <h2 id="handover-heading">Hand over</h2>
+          <BudgetPanel tripId={trip.id} planVersion={panel.plan.version} />
+          <SharePanel tripId={trip.id} isBusy={planActions.isBusy} />
+          <FeedbackPanel key={trip.id} tripId={trip.id} />
+          {versions.length > 0 ? (
+            <PlanVersions
+              versions={versions}
+              currentVersion={panel.plan.version}
+              isBusy={planActions.isBusy}
+              onRestore={restore}
+            />
+          ) : null}
+        </section>
       ) : null}
-      {panel.plan ? <ChatBox tripId={trip.id} planVersion={panel.plan.version} currency={panel.plan.currency} isBusy={actions.isBusy} onBusyChange={setIsChatBusy} onPlanChanged={showPlan} /> : null}
     </>
   );
 }

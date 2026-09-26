@@ -15,12 +15,11 @@ describe('the business product screens', () => {
   test('list a Trip as its own block with name, Destination, dates and status', () => {
     const markup = markupOf(createElement(TripTable, { trips: [A_TRIP] }));
 
-    expect(markup).toContain('<article');
+    expect(markup).toContain('<table');
     expect(shownIn(markup)).toContain('Kyoto Family Holiday');
     expect(shownIn(markup)).toContain('Kyoto, Japan');
     expect(shownIn(markup)).toContain('2026-10-10 to 2026-10-17');
     expect(shownIn(markup)).toContain('Planned');
-    expect(markup).not.toContain('<table');
   });
 
   // @covers REQ-TRV-107@v1
