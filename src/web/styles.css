@@ -691,6 +691,10 @@ nav[aria-label='Admin functions'] ul {
   font-weight: 600;
 }
 
+.admin-tile-mark::before {
+  content: attr(data-mark);
+}
+
 .admin-tile-label {
   font-family: var(--serif);
   font-size: 1.15rem;

@@ -25,9 +25,12 @@ export function AdminDashboardPage() {
           {ADMIN_FUNCTIONS.map((adminFunction) => (
             <li key={adminFunction.key}>
               <Link to={adminFunction.path} className="admin-tile">
-                <span className="admin-tile-mark" aria-hidden="true">
-                  {adminFunction.label.slice(0, 1)}
-                </span>
+                {/* The letter is drawn by CSS, so the tile's text starts with the function's name. */}
+                <span
+                  className="admin-tile-mark"
+                  aria-hidden="true"
+                  data-mark={adminFunction.label.slice(0, 1)}
+                />
                 <span className="admin-tile-label">{adminFunction.label}</span>
                 <span className="admin-tile-hint" aria-hidden="true">
                   {FUNCTION_HINT[adminFunction.key]}

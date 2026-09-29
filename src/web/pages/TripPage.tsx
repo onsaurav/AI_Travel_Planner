@@ -57,7 +57,6 @@ export function TripPage() {
       </p>
       <PageHeader
         title={shown.name}
-        lead={`${shown.destination.name}, ${shown.destination.country}`}
         badge={<StatusBadge label={shown.status} />}
         actions={
           <>
@@ -106,10 +105,6 @@ export function TripPage() {
         <div>
           <dt>Budget</dt>
           <dd>{`${shown.budget} ${shown.currency}`}</dd>
-        </div>
-        <div>
-          <dt>Status</dt>
-          <dd>{shown.status}</dd>
         </div>
       </dl>
       <PreferenceSummary trip={shown} />
